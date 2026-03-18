@@ -1,32 +1,15 @@
-import { useState } from 'react';
-import CreateItinerary from './components/CreateItinerary';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import CreateItineraryPage from './pages/CreateItineraryPage';
 
 function App() {
-  const [message, setMessage] = useState('');
-
-  const handleSuccess = () => {
-    setMessage('Itinerary created successfully!');
-    setTimeout(() => setMessage(''), 3000);
-  };
-
   return (
-    <div>
-      <h1 style={{ textAlign: 'center', marginTop: '20px' }}>Travel Itinerary</h1>
-      
-      {message && (
-        <div style={{
-          backgroundColor: '#d4edda',
-          color: '#155724',
-          padding: '10px',
-          textAlign: 'center',
-          marginBottom: '20px'
-        }}>
-          {message}
-        </div>
-      )}
-      
-      <CreateItinerary onSuccess={handleSuccess} />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/create-itinerary" element={<CreateItineraryPage />} />
+      </Routes>
+    </Router>
   );
 }
 

@@ -1,0 +1,4 @@
+staticSites:
+  - name: travel-itinerary-frontend
+    buildCommand: npm install && npm run build
+    publishPath: travel-itinerary-frontend/dist

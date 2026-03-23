@@ -1,0 +1,10 @@
+{
+  "name": "travel-itinerary-frontend-root",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix travel-itinerary-frontend install && npm --prefix travel-itinerary-frontend run build",
+    "dev": "npm --prefix travel-itinerary-frontend run dev",
+    "lint": "npm --prefix travel-itinerary-frontend run lint",
+    "preview": "npm --prefix travel-itinerary-frontend run preview"
+  }
+}

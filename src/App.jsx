@@ -8,6 +8,8 @@ import {
 import { AuthProvider, useAuth } from "./AuthContext";
 import { Register, Login } from "./components/Authentication";
 import Home from "./pages/Home";
+import ItineraryForm from "./pages/ItineraryForm";
+
 import ItineraryDetails from "./pages/ItineraryDetails";
 
 // Protected Route wrapper
@@ -23,7 +25,6 @@ const ProtectedRoute = ({ children }) => {
 
   return isLoggedIn ? children : null;
 };
-
 function AppContent() {
   return (
     <Routes>
@@ -38,10 +39,34 @@ function AppContent() {
         }
       />
       <Route
+        path="/itineraries"
+        element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/create-itinerary"
         element={
           <ProtectedRoute>
+            <ItineraryForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/itineraries/:id"
+        element={
+          <ProtectedRoute>
             <ItineraryDetails />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/itineraries/:id/edit"
+        element={
+          <ProtectedRoute>
+            <ItineraryForm />
           </ProtectedRoute>
         }
       />

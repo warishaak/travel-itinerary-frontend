@@ -5,8 +5,9 @@ import {
   Route,
   useNavigate,
 } from "react-router-dom";
-import { AuthProvider, useAuth } from "./AuthContext";
-import { Register, Login } from "./components/Authentication";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Home from "./pages/Home";
 import ItineraryForm from "./pages/ItineraryForm";
 

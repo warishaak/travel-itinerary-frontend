@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { apiClient } from "../services/api";
 import Navbar from "../components/Navbar";
 
@@ -15,7 +15,7 @@ export default function Home() {
     apiClient.itineraries
       .getAll()
       .then(setItineraries)
-      .catch((err) => setError("Failed to load itineraries"))
+      .catch(() => setError("Failed to load itineraries"))
       .finally(() => setLoading(false));
   }, []);
 

@@ -28,10 +28,6 @@ export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState(null);
 
-  useEffect(() => {
-    checkLoginStatus();
-  }, []);
-
   const checkLoginStatus = () => {
     const token = authStorage.get("access_token");
     const storedUsername = authStorage.get("username");
@@ -43,6 +39,10 @@ export function AuthProvider({ children }) {
       setUsername(null);
     }
   };
+
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
 
   const login = (accessToken, refreshToken, user) => {
     authStorage.set("access_token", accessToken);

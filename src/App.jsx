@@ -1,6 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import ItineraryDetails from './pages/ItineraryDetails';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import ItineraryDetails from "./pages/ItineraryDetails";
 
 function App() {
   return (

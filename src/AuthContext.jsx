@@ -1,15 +1,15 @@
-import React, { createContext, useContext, useState } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useContext, useState } from "react";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState({
-    email: 'user@example.com',
+    email: "user@example.com",
   });
 
   const logout = () => {
     setUser(null);
-
   };
 
   return (

@@ -1,5 +1,5 @@
-import ItineraryForm from './ItineraryForm';
+import ItineraryForm from "./ItineraryForm";
 
 export default function ItineraryDetails() {
-	return <ItineraryForm />;
+  return <ItineraryForm />;
 }

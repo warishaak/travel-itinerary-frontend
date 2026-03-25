@@ -43,7 +43,10 @@ export default function ItineraryForm() {
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   }
 
   async function handleSubmit(e) {
@@ -94,11 +97,17 @@ export default function ItineraryForm() {
   return (
     <div className="itinerary-container">
       <Navbar>
-        <Link to="/" className="navbar-link">Home</Link>
-        <Link to="/create-itinerary" className="navbar-link">Create</Link>
+        <Link to="/" className="navbar-link">
+          Home
+        </Link>
+        <Link to="/create-itinerary" className="navbar-link">
+          Create
+        </Link>
       </Navbar>
       <div className="itinerary-content">
-        <h1 className="itinerary-title">{isEdit ? "Edit Itinerary" : "New Itinerary"}</h1>
+        <h1 className="itinerary-title">
+          {isEdit ? "Edit Itinerary" : "New Itinerary"}
+        </h1>
         {error && <p className="itinerary-error">{error}</p>}
         <form onSubmit={handleSubmit} noValidate className="itinerary-form">
           <input
@@ -132,10 +141,16 @@ export default function ItineraryForm() {
             />
           </div>
           <div className="itinerary-actions">
-            <button type="submit" disabled={loading} className="itinerary-submit">
+            <button
+              type="submit"
+              disabled={loading}
+              className="itinerary-submit"
+            >
               {loading ? "Saving..." : isEdit ? "Update" : "Create"}
             </button>
-            <Link to="/" className="itinerary-cancel">Cancel</Link>
+            <Link to="/" className="itinerary-cancel">
+              Cancel
+            </Link>
           </div>
         </form>
       </div>

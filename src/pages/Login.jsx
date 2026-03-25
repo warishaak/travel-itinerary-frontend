@@ -31,8 +31,7 @@ export default function Login() {
       navigate("/", { replace: true });
     } catch (err) {
       setError(
-        err.response?.data?.detail ||
-        "Login failed. Check your credentials."
+        err.response?.data?.detail || "Login failed. Check your credentials.",
       );
     } finally {
       setLoading(false);
@@ -63,17 +62,15 @@ export default function Login() {
             autoComplete="current-password"
             className="auth-input"
           />
-          <button
-            type="submit"
-            disabled={loading}
-            className="auth-button"
-          >
+          <button type="submit" disabled={loading} className="auth-button">
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
         <p className="auth-footer">
           Don&apos;t have an account?{" "}
-          <Link to="/register" className="auth-link">Create one</Link>
+          <Link to="/register" className="auth-link">
+            Create one
+          </Link>
         </p>
       </div>
     </div>

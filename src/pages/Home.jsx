@@ -27,14 +27,22 @@ export default function Home() {
   return (
     <div className="home-container">
       <Navbar>
-        <Link to="/" className="navbar-link">Home</Link>
-        <Link to="/create-itinerary" className="navbar-link">Create</Link>
+        <Link to="/" className="navbar-link">
+          Home
+        </Link>
+        <Link to="/create-itinerary" className="navbar-link">
+          Create
+        </Link>
         <span className="navbar-email">{username || user?.email}</span>
-        <button onClick={handleLogout} className="navbar-logout-btn">Logout</button>
+        <button onClick={handleLogout} className="navbar-logout-btn">
+          Logout
+        </button>
       </Navbar>
       <div className="home-content">
         <h1 className="home-title">My Itineraries</h1>
-        <p className="home-subtitle">Plan and manage your travel itineraries in one place.</p>
+        <p className="home-subtitle">
+          Plan and manage your travel itineraries in one place.
+        </p>
 
         {error && <p className="itinerary-error">{error}</p>}
 
@@ -45,7 +53,9 @@ export default function Home() {
             <p className="home-empty-text">
               No itineraries yet. Create your first one!
             </p>
-            <Link to="/create-itinerary" className="home-cta">Create New Itinerary</Link>
+            <Link to="/create-itinerary" className="home-cta">
+              Create New Itinerary
+            </Link>
           </div>
         ) : (
           <div className="home-itineraries-container">
@@ -62,9 +72,7 @@ export default function Home() {
                   to={`/itineraries/${itinerary.id}`}
                   className="itinerary-card"
                 >
-                  <h3 className="itinerary-card-title">
-                    {itinerary.title}
-                  </h3>
+                  <h3 className="itinerary-card-title">{itinerary.title}</h3>
                   <p className="itinerary-card-destination">
                     📍 {itinerary.destination}
                   </p>
@@ -73,7 +81,10 @@ export default function Home() {
                   </p>
                   {itinerary.activities && itinerary.activities.length > 0 && (
                     <p className="itinerary-card-activities">
-                      {itinerary.activities.length} {itinerary.activities.length === 1 ? "activity" : "activities"}
+                      {itinerary.activities.length}{" "}
+                      {itinerary.activities.length === 1
+                        ? "activity"
+                        : "activities"}
                     </p>
                   )}
                 </Link>

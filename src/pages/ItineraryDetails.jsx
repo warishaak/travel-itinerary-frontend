@@ -13,9 +13,17 @@ export default function ItineraryDetail() {
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [newItem, setNewItem] = useState({ title: "", description: "", day_number: "" });
+  const [newItem, setNewItem] = useState({
+    title: "",
+    description: "",
+    day_number: "",
+  });
   const [editingIndex, setEditingIndex] = useState(null);
-  const [editForm, setEditForm] = useState({ title: "", description: "", day_number: "" });
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    day_number: "",
+  });
 
   useEffect(() => {
     api.itineraries
@@ -61,7 +69,9 @@ export default function ItineraryDetail() {
     activities.push({
       title: newItem.title.trim(),
       description: (newItem.description || "").trim() || undefined,
-      day_number: newItem.day_number ? parseInt(newItem.day_number, 10) : undefined,
+      day_number: newItem.day_number
+        ? parseInt(newItem.day_number, 10)
+        : undefined,
     });
     setNewItem({ title: "", description: "", day_number: "" });
     saveActivities(activities);
@@ -73,7 +83,9 @@ export default function ItineraryDetail() {
     activities[editingIndex] = {
       title: editForm.title.trim(),
       description: (editForm.description || "").trim() || undefined,
-      day_number: editForm.day_number ? parseInt(editForm.day_number, 10) : undefined,
+      day_number: editForm.day_number
+        ? parseInt(editForm.day_number, 10)
+        : undefined,
     };
     setEditingIndex(null);
     saveActivities(activities);
@@ -88,7 +100,10 @@ export default function ItineraryDetail() {
 
   function startEdit(index) {
     const item = itinerary.activities[index];
-    const a = typeof item === "object" ? item : { title: String(item), description: "", day_number: "" };
+    const a =
+      typeof item === "object"
+        ? item
+        : { title: String(item), description: "", day_number: "" };
     setEditingIndex(index);
     setEditForm({
       title: a.title || "",
@@ -99,30 +114,51 @@ export default function ItineraryDetail() {
 
   const activities = itinerary?.activities || [];
 
-  if (loading) return (
-    <div className="detail-container">
-      <Navbar><div /></Navbar>
-      <div className="detail-content"><p className="detail-loading">Loading...</p></div>
-    </div>
-  );
-  if (error && !itinerary) return (
-    <div className="detail-container">
-      <Navbar><Link to="/itineraries" className="navbar-link">← Back</Link></Navbar>
-      <div className="detail-content"><p className="detail-error">{error}</p></div>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="detail-container">
+        <Navbar>
+          <div />
+        </Navbar>
+        <div className="detail-content">
+          <p className="detail-loading">Loading...</p>
+        </div>
+      </div>
+    );
+  if (error && !itinerary)
+    return (
+      <div className="detail-container">
+        <Navbar>
+          <Link to="/itineraries" className="navbar-link">
+            ← Back
+          </Link>
+        </Navbar>
+        <div className="detail-content">
+          <p className="detail-error">{error}</p>
+        </div>
+      </div>
+    );
 
   return (
     <div className="detail-container">
       <Navbar>
-        <Link to="/itineraries" className="navbar-link">← Back</Link>
-        <button onClick={logout} className="navbar-logout-btn">Logout</button>
+        <Link to="/itineraries" className="navbar-link">
+          ← Back
+        </Link>
+        <button onClick={logout} className="navbar-logout-btn">
+          Logout
+        </button>
       </Navbar>
       <div className="detail-content">
         <div className="detail-card">
           <h1 className="detail-title">{itinerary.title}</h1>
-          <p className="detail-dest"><strong>Destination:</strong> {itinerary.destination}</p>
-          <p className="detail-dates"><strong>Dates:</strong> {itinerary.start_date} to {itinerary.end_date}</p>
+          <p className="detail-dest">
+            <strong>Destination:</strong> {itinerary.destination}
+          </p>
+          <p className="detail-dates">
+            <strong>Dates:</strong> {itinerary.start_date} to{" "}
+            {itinerary.end_date}
+          </p>
 
           <div className="detail-section">
             <h3 className="detail-section-title">Things to do</h3>
@@ -131,13 +167,17 @@ export default function ItineraryDetail() {
               <input
                 placeholder="Activity name (e.g. Visit Eiffel Tower)"
                 value={newItem.title}
-                onChange={(e) => setNewItem((p) => ({ ...p, title: e.target.value }))}
+                onChange={(e) =>
+                  setNewItem((p) => ({ ...p, title: e.target.value }))
+                }
                 className="detail-add-input"
               />
               <input
                 placeholder="Description (optional)"
                 value={newItem.description}
-                onChange={(e) => setNewItem((p) => ({ ...p, description: e.target.value }))}
+                onChange={(e) =>
+                  setNewItem((p) => ({ ...p, description: e.target.value }))
+                }
                 className="detail-add-input"
               />
               <div className="detail-add-row">
@@ -148,19 +188,27 @@ export default function ItineraryDetail() {
                     min="1"
                     placeholder="—"
                     value={newItem.day_number}
-                    onChange={(e) => setNewItem((p) => ({ ...p, day_number: e.target.value }))}
+                    onChange={(e) =>
+                      setNewItem((p) => ({ ...p, day_number: e.target.value }))
+                    }
                     className="detail-day-input"
                     aria-label="Day number optional"
                   />
                 </div>
-                <button type="submit" disabled={saving} className="detail-add-btn">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="detail-add-btn"
+                >
                   {saving ? "Adding..." : "Add activity"}
                 </button>
               </div>
             </form>
 
             {activities.length === 0 ? (
-              <p className="detail-empty-items">No activities yet. Add one above.</p>
+              <p className="detail-empty-items">
+                No activities yet. Add one above.
+              </p>
             ) : (
               <ul className="detail-item-list">
                 {activities.map((item, i) => (
@@ -169,46 +217,93 @@ export default function ItineraryDetail() {
                       <div className="detail-edit-form">
                         <input
                           value={editForm.title}
-                          onChange={(e) => setEditForm((p) => ({ ...p, title: e.target.value }))}
+                          onChange={(e) =>
+                            setEditForm((p) => ({
+                              ...p,
+                              title: e.target.value,
+                            }))
+                          }
                           className="detail-edit-input"
                           placeholder="Title"
                         />
                         <input
                           value={editForm.description}
-                          onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
+                          onChange={(e) =>
+                            setEditForm((p) => ({
+                              ...p,
+                              description: e.target.value,
+                            }))
+                          }
                           placeholder="Description"
                           className="detail-edit-input"
                         />
                         <div className="detail-edit-actions">
                           <div className="detail-day-wrapper">
-                            <label className="detail-label">Day (optional)</label>
+                            <label className="detail-label">
+                              Day (optional)
+                            </label>
                             <input
                               type="number"
                               min="1"
                               value={editForm.day_number}
-                              onChange={(e) => setEditForm((p) => ({ ...p, day_number: e.target.value }))}
+                              onChange={(e) =>
+                                setEditForm((p) => ({
+                                  ...p,
+                                  day_number: e.target.value,
+                                }))
+                              }
                               placeholder="—"
                               className="detail-day-input"
                             />
                           </div>
-                          <button type="button" onClick={handleUpdateItem} className="detail-save-btn">Save</button>
-                          <button type="button" onClick={() => setEditingIndex(null)} className="detail-cancel-btn">Cancel</button>
+                          <button
+                            type="button"
+                            onClick={handleUpdateItem}
+                            className="detail-save-btn"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingIndex(null)}
+                            className="detail-cancel-btn"
+                          >
+                            Cancel
+                          </button>
                         </div>
                       </div>
                     ) : (
                       <>
                         <div>
-                          <strong>{typeof item === "object" ? item.title : item}</strong>
+                          <strong>
+                            {typeof item === "object" ? item.title : item}
+                          </strong>
                           {typeof item === "object" && item.day_number && (
-                            <span className="detail-day-badge">Day {item.day_number}</span>
+                            <span className="detail-day-badge">
+                              Day {item.day_number}
+                            </span>
                           )}
                           {typeof item === "object" && item.description && (
-                            <p className="detail-item-desc">{item.description}</p>
+                            <p className="detail-item-desc">
+                              {item.description}
+                            </p>
                           )}
                         </div>
                         <div className="detail-item-actions">
-                          <button type="button" onClick={() => startEdit(i)} className="detail-small-btn">Edit</button>
-                          <button type="button" onClick={() => handleDeleteItem(i)} className="detail-small-btn-danger">Remove</button>
+                          <button
+                            type="button"
+                            onClick={() => startEdit(i)}
+                            className="detail-small-btn"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteItem(i)}
+                            className="detail-small-btn-danger"
+                          >
+                            Remove
+                          </button>
                         </div>
                       </>
                     )}
@@ -219,8 +314,14 @@ export default function ItineraryDetail() {
           </div>
 
           <div className="detail-actions">
-            <Link to={`/itineraries/${id}/edit`} className="detail-edit-btn">Edit itinerary</Link>
-            <button onClick={handleDelete} disabled={deleting} className="detail-delete-btn">
+            <Link to={`/itineraries/${id}/edit`} className="detail-edit-btn">
+              Edit itinerary
+            </Link>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="detail-delete-btn"
+            >
               {deleting ? "Deleting..." : "Delete itinerary"}
             </button>
           </div>

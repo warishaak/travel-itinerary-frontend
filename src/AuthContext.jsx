@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useContext } from "react";
 
 const LOCAL_STORAGE_NAMESPACE = "appAuthentication";
 
@@ -25,8 +25,16 @@ const authStorage = {
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    const token = authStorage.get("access_token");
+    const storedUsername = authStorage.get("username");
+    return !!(token && storedUsername);
+  });
+
+  const [username, setUsername] = useState(() => {
+    const storedUsername = authStorage.get("username");
+    return storedUsername || null;
+  });
 
   const checkLoginStatus = () => {
     const token = authStorage.get("access_token");
@@ -39,10 +47,6 @@ export function AuthProvider({ children }) {
       setUsername(null);
     }
   };
-
-  useEffect(() => {
-    checkLoginStatus();
-  }, []);
 
   const login = (accessToken, refreshToken, user) => {
     authStorage.set("access_token", accessToken);

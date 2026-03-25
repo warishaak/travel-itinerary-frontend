@@ -1,9 +1,14 @@
-import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './AuthContext';
-import { Register, Login } from './components/Authentication';
-import Home from './pages/Home';
-import ItineraryDetails from './pages/ItineraryDetails';
+import { useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./AuthContext";
+import { Register, Login } from "./components/Authentication";
+import Home from "./pages/Home";
+import ItineraryDetails from "./pages/ItineraryDetails";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -12,7 +17,7 @@ const ProtectedRoute = ({ children }) => {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [isLoggedIn, navigate]);
 

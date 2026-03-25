@@ -31,8 +31,7 @@ export const Login = () => {
       navigate("/", { replace: true });
     } catch (err) {
       setError(
-        err.response?.data?.detail ||
-        "Login failed. Check your credentials."
+        err.response?.data?.detail || "Login failed. Check your credentials.",
       );
     } finally {
       setLoading(false);
@@ -63,17 +62,15 @@ export const Login = () => {
             autoComplete="current-password"
             className="auth-input"
           />
-          <button
-            type="submit"
-            disabled={loading}
-            className="auth-button"
-          >
+          <button type="submit" disabled={loading} className="auth-button">
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
         <p className="auth-footer">
           Don&apos;t have an account?{" "}
-          <Link to="/register" className="auth-link">Create one</Link>
+          <Link to="/register" className="auth-link">
+            Create one
+          </Link>
         </p>
       </div>
     </div>
@@ -124,7 +121,10 @@ export const Register = () => {
       const errorData = err.response?.data;
       if (errorData) {
         const errorMessages = Object.entries(errorData)
-          .map(([key, value]) => `${key}: ${Array.isArray(value) ? value[0] : value}`)
+          .map(
+            ([key, value]) =>
+              `${key}: ${Array.isArray(value) ? value[0] : value}`,
+          )
           .join(", ");
         setError(errorMessages);
       } else {
@@ -167,17 +167,15 @@ export const Register = () => {
             autoComplete="new-password"
             className="auth-input"
           />
-          <button
-            type="submit"
-            disabled={loading}
-            className="auth-button"
-          >
+          <button type="submit" disabled={loading} className="auth-button">
             {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
         <p className="auth-footer">
           Already have an account?{" "}
-          <Link to="/login" className="auth-link">Sign in</Link>
+          <Link to="/login" className="auth-link">
+            Sign in
+          </Link>
         </p>
       </div>
     </div>

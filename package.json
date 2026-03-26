@@ -39,6 +39,6 @@
     "vitest": "^4.1.1"
   },
   "overrides": {
-    "undici": "7.24.5"
+    "undici": "https://registry.npmjs.org/undici/-/undici-7.24.5.tgz"
   }
 }

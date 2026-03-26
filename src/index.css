@@ -222,10 +222,31 @@ code {
 }
 
 .itinerary-input {
-  padding: 14px;
-  font-size: 16px;
-  border: 1px solid #e2e8f0;
+  appearance: auto;
+  background-color: rgb(255, 255, 255);
+  border: 1.33333px solid rgb(226, 232, 240);
   border-radius: 10px;
+  box-sizing: border-box;
+  color: rgb(0, 0, 0);
+  cursor: text;
+  display: block;
+  font-family: Arial;
+  font-size: 16px;
+  font-weight: 400;
+  height: 49.3333px;
+  letter-spacing: normal;
+  line-height: normal;
+  margin: 0;
+  overflow: clip;
+  padding: 14px;
+  text-align: start;
+  text-rendering: auto;
+  text-shadow: none;
+  text-transform: none;
+  width: 320px;
+  word-spacing: 0px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-rtl-ordering: logical;
 }
 
 .itinerary-row {

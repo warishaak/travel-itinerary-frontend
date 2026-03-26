@@ -2,3 +2,8 @@ staticSites:
   - name: travel-itinerary-frontend
     buildCommand: npm config set registry https://registry.npmjs.org && npm ci && npm run build
     publishPath: dist
+    envVars:
+      - key: NPM_CONFIG_REGISTRY
+        value: https://registry.npmjs.org/
+      - key: npm_config_registry
+        value: https://registry.npmjs.org/

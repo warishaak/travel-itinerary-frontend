@@ -49,7 +49,9 @@ describe("API Service - Authentication Endpoints", () => {
     });
 
     it("should handle network errors gracefully", async () => {
-      server.use(http.post(`${API_URL}/auth/token/`, () => HttpResponse.error()));
+      server.use(
+        http.post(`${API_URL}/auth/token/`, () => HttpResponse.error()),
+      );
 
       try {
         await login("user@example.com", "pass");

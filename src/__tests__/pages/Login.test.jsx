@@ -117,7 +117,9 @@ describe("Login Component - Authentication UI & Flow", () => {
     });
 
     it("should display generic error on network failure", async () => {
-      server.use(http.post(`${API_URL}/auth/token/`, () => HttpResponse.error()));
+      server.use(
+        http.post(`${API_URL}/auth/token/`, () => HttpResponse.error()),
+      );
 
       const user = userEvent.setup();
       renderWithProviders(<Login />);

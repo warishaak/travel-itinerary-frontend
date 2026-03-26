@@ -7,7 +7,9 @@ const api = axios.create({
 });
 
 const getAccessToken = () => {
-  const namespacedToken = localStorage.getItem("appAuthentication.access_token");
+  const namespacedToken = localStorage.getItem(
+    "appAuthentication.access_token",
+  );
   if (namespacedToken) {
     try {
       return JSON.parse(namespacedToken);
@@ -37,7 +39,12 @@ export const login = async (email, password) => {
   return response.data;
 };
 
-export const register = async (email, password, firstName = "", lastName = "") => {
+export const register = async (
+  email,
+  password,
+  firstName = "",
+  lastName = "",
+) => {
   const response = await api.post("/auth/register/", {
     email,
     password,

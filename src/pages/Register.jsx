@@ -45,7 +45,7 @@ export default function Register() {
       navigate("/", { replace: true });
     } catch (err) {
       const errorData = err.response?.data;
-      if (errorData) {
+      if (errorData && typeof errorData === "object") {
         const errorMessages = Object.entries(errorData)
           .map(
             ([key, value]) =>
@@ -53,6 +53,8 @@ export default function Register() {
           )
           .join(", ");
         setError(errorMessages);
+      } else if (typeof errorData === "string") {
+        setError("Registration failed. Server returned an unexpected response.");
       } else {
         setError("Registration failed. Please try again.");
       }

@@ -69,7 +69,7 @@ export default function Register() {
     <div className="auth-wrapper">
       <div className="auth-card">
         <h1 className="auth-title">Create account</h1>
-        <p className="auth-subtitle">Sign up to start planning your trips</p>
+        <p className="auth-subtitle">Start planning your next adventure</p>
         <form onSubmit={handleSubmit} noValidate className="auth-form">
           {error && <p className="auth-error">{error}</p>}
           <input

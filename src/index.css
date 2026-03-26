@@ -348,6 +348,7 @@ code {
   border-radius: 10px;
   font-family: inherit;
   background-color: rgb(255, 255, 255);
+  color: rgb(0, 0, 0);
 }
 
 .auth-input:focus {
@@ -381,9 +382,6 @@ code {
   color: #dc2626;
   margin: 0;
   font-size: 14px;
-  padding: 12px;
-  background: #fee2e2;
-  border-radius: 8px;
 }
 
 .auth-footer {

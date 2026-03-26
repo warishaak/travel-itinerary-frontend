@@ -6,20 +6,20 @@ const API_URL = "http://localhost:8000/api";
 // Define request handlers for different scenarios
 export const handlers = [
   // Authentication endpoints
-  http.post(`${API_URL}/token/`, async () => {
+  http.post(`${API_URL}/auth/token/`, async () => {
     return HttpResponse.json({
       access: "mock-access-token",
       refresh: "mock-refresh-token",
     });
   }),
 
-  http.post(`${API_URL}/token/refresh/`, async () => {
+  http.post(`${API_URL}/auth/token/refresh/`, async () => {
     return HttpResponse.json({
       access: "mock-new-access-token",
     });
   }),
 
-  http.post(`${API_URL}/register/`, async () => {
+  http.post(`${API_URL}/auth/register/`, async () => {
     return HttpResponse.json({
       id: 1,
       username: "testuser",
@@ -28,7 +28,7 @@ export const handlers = [
   }),
 
   // Itinerary endpoints
-  http.get(`${API_URL}/itineraries/`, async () => {
+  http.get(`${API_URL}/itineraries/my/`, async () => {
     return HttpResponse.json([
       {
         id: 1,
@@ -41,7 +41,7 @@ export const handlers = [
     ]);
   }),
 
-  http.get(`${API_URL}/itineraries/:id/`, async ({ params }) => {
+  http.get(`${API_URL}/itineraries/my/:id/`, async ({ params }) => {
     if (params.id === "1") {
       return HttpResponse.json({
         id: 1,
@@ -55,7 +55,7 @@ export const handlers = [
     return HttpResponse.json({ detail: "Not found" }, { status: 404 });
   }),
 
-  http.post(`${API_URL}/itineraries/`, async () => {
+  http.post(`${API_URL}/itineraries/my/`, async () => {
     return HttpResponse.json(
       {
         id: 2,
@@ -69,7 +69,7 @@ export const handlers = [
     );
   }),
 
-  http.put(`${API_URL}/itineraries/:id/`, async () => {
+  http.put(`${API_URL}/itineraries/my/:id/`, async () => {
     return HttpResponse.json({
       id: 1,
       title: "Updated Paris Trip",
@@ -80,7 +80,7 @@ export const handlers = [
     });
   }),
 
-  http.delete(`${API_URL}/itineraries/:id/`, async () => {
+  http.delete(`${API_URL}/itineraries/my/:id/`, async () => {
     return HttpResponse.json(null, { status: 204 });
   }),
 ];

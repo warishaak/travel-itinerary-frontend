@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { login as apiLogin } from "../services/api";
 
 export default function Login() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,8 +15,8 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
-    if (!username.trim()) {
-      setError("Username is required.");
+    if (!email.trim()) {
+      setError("Email is required.");
       return;
     }
     if (!password) {
@@ -26,8 +26,8 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const data = await apiLogin(username, password);
-      login(data.access, data.refresh, username);
+      const data = await apiLogin(email, password);
+      login(data.access, data.refresh, email);
       navigate("/", { replace: true });
     } catch (err) {
       setError(
@@ -46,11 +46,11 @@ export default function Login() {
         <form onSubmit={handleSubmit} noValidate className="auth-form">
           {error && <p className="auth-error">{error}</p>}
           <input
-            type="text"
-            autoComplete="username"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            type="email"
+            autoComplete="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="auth-input"
             autoFocus
           />

@@ -189,7 +189,7 @@ describe("ItineraryForm - Core Domain Logic & Validation", () => {
       router.useNavigate.mockReturnValue(mockNavigate);
 
       server.use(
-        http.post(`${API_URL}/itineraries/`, () =>
+        http.post(`${API_URL}/itineraries/my/`, () =>
           HttpResponse.json(
             { detail: "Failed to save itinerary" },
             { status: 400 },
@@ -230,7 +230,7 @@ describe("ItineraryForm - Core Domain Logic & Validation", () => {
       router.useNavigate.mockReturnValue(mockNavigate);
 
       server.use(
-        http.post(`${API_URL}/itineraries/`, () => HttpResponse.error()),
+        http.post(`${API_URL}/itineraries/my/`, () => HttpResponse.error()),
       );
 
       renderWithProviders(<ItineraryForm />);

@@ -25,7 +25,7 @@ describe("Login Component - Authentication UI & Flow", () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Username is required.")).toBeInTheDocument();
+        expect(screen.getByText("Email is required.")).toBeInTheDocument();
       });
     });
 
@@ -33,10 +33,10 @@ describe("Login Component - Authentication UI & Flow", () => {
       const user = userEvent.setup();
       renderWithProviders(<Login />);
 
-      const usernameInput = screen.getByPlaceholderText("Username");
+      const usernameInput = screen.getByPlaceholderText("Email");
       const submitButton = screen.getByRole("button", { name: /Sign in/i });
 
-      await user.type(usernameInput, "testuser");
+      await user.type(usernameInput, "test@example.com");
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -50,18 +50,18 @@ describe("Login Component - Authentication UI & Flow", () => {
       const user = userEvent.setup();
       renderWithProviders(<Login />);
 
-      const usernameInput = screen.getByPlaceholderText("Username");
+      const usernameInput = screen.getByPlaceholderText("Email");
       const passwordInput = screen.getByPlaceholderText("Password");
       const submitButton = screen.getByRole("button", { name: /Sign in/i });
 
-      await user.type(usernameInput, "alice");
+      await user.type(usernameInput, "alice@example.com");
       await user.type(passwordInput, "password123");
       await user.click(submitButton);
 
       await waitFor(() => {
         // Should redirect to home (verify by checking URL or component)
         expect(localStorage.getItem("appAuthentication.username")).toBe(
-          JSON.stringify("alice"),
+          JSON.stringify("alice@example.com"),
         );
       });
     });
@@ -70,11 +70,11 @@ describe("Login Component - Authentication UI & Flow", () => {
       const user = userEvent.setup();
       renderWithProviders(<Login />);
 
-      const usernameInput = screen.getByPlaceholderText("Username");
+      const usernameInput = screen.getByPlaceholderText("Email");
       const passwordInput = screen.getByPlaceholderText("Password");
       const submitButton = screen.getByRole("button", { name: /Sign in/i });
 
-      await user.type(usernameInput, "bob");
+      await user.type(usernameInput, "bob@example.com");
       await user.type(passwordInput, "secure-pass");
       await user.click(submitButton);
 
@@ -86,7 +86,7 @@ describe("Login Component - Authentication UI & Flow", () => {
           JSON.stringify("mock-refresh-token"),
         );
         expect(localStorage.getItem("appAuthentication.username")).toBe(
-          JSON.stringify("bob"),
+          JSON.stringify("bob@example.com"),
         );
       });
     });
@@ -95,7 +95,7 @@ describe("Login Component - Authentication UI & Flow", () => {
   describe("Error Handling", () => {
     it("should display API error message on failed login", async () => {
       server.use(
-        http.post(`${API_URL}/token/`, () =>
+        http.post(`${API_URL}/auth/token/`, () =>
           HttpResponse.json({ detail: "Invalid credentials" }, { status: 401 }),
         ),
       );
@@ -103,11 +103,11 @@ describe("Login Component - Authentication UI & Flow", () => {
       const user = userEvent.setup();
       renderWithProviders(<Login />);
 
-      const usernameInput = screen.getByPlaceholderText("Username");
+      const usernameInput = screen.getByPlaceholderText("Email");
       const passwordInput = screen.getByPlaceholderText("Password");
       const submitButton = screen.getByRole("button", { name: /Sign in/i });
 
-      await user.type(usernameInput, "wronguser");
+      await user.type(usernameInput, "wrong@example.com");
       await user.type(passwordInput, "wrongpass");
       await user.click(submitButton);
 
@@ -117,16 +117,16 @@ describe("Login Component - Authentication UI & Flow", () => {
     });
 
     it("should display generic error on network failure", async () => {
-      server.use(http.post(`${API_URL}/token/`, () => HttpResponse.error()));
+      server.use(http.post(`${API_URL}/auth/token/`, () => HttpResponse.error()));
 
       const user = userEvent.setup();
       renderWithProviders(<Login />);
 
-      const usernameInput = screen.getByPlaceholderText("Username");
+      const usernameInput = screen.getByPlaceholderText("Email");
       const passwordInput = screen.getByPlaceholderText("Password");
       const submitButton = screen.getByRole("button", { name: /Sign in/i });
 
-      await user.type(usernameInput, "user");
+      await user.type(usernameInput, "user@example.com");
       await user.type(passwordInput, "pass");
       await user.click(submitButton);
 
@@ -139,7 +139,7 @@ describe("Login Component - Authentication UI & Flow", () => {
 
     it("should clear previous errors when submitting new attempt", async () => {
       server.use(
-        http.post(`${API_URL}/token/`, () =>
+        http.post(`${API_URL}/auth/token/`, () =>
           HttpResponse.json({ detail: "Invalid credentials" }, { status: 401 }),
         ),
       );
@@ -147,7 +147,7 @@ describe("Login Component - Authentication UI & Flow", () => {
       const user = userEvent.setup();
       renderWithProviders(<Login />);
 
-      const usernameInput = screen.getByPlaceholderText("Username");
+      const usernameInput = screen.getByPlaceholderText("Email");
       const passwordInput = screen.getByPlaceholderText("Password");
       const submitButton = screen.getByRole("button", { name: /Sign in/i });
 

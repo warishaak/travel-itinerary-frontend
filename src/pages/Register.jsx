@@ -39,9 +39,9 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await apiRegister(username, email, password);
-      const loginData = await apiLogin(username, password);
-      login(loginData.access, loginData.refresh, username);
+      await apiRegister(email, password, username);
+      const loginData = await apiLogin(email, password);
+      login(loginData.access, loginData.refresh, email);
       navigate("/", { replace: true });
     } catch (err) {
       const errorData = err.response?.data;

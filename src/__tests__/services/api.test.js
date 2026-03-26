@@ -8,7 +8,7 @@ const API_URL = "http://localhost:8000/api";
 describe("API Service - Authentication Endpoints", () => {
   describe("login", () => {
     it("should successfully authenticate with valid credentials", async () => {
-      const result = await login("testuser", "password123");
+      const result = await login("test@example.com", "password123");
 
       expect(result).toEqual({
         access: "mock-access-token",
@@ -18,9 +18,9 @@ describe("API Service - Authentication Endpoints", () => {
 
     it("should include credentials in request body", async () => {
       server.use(
-        http.post(`${API_URL}/token/`, async ({ request }) => {
+        http.post(`${API_URL}/auth/token/`, async ({ request }) => {
           const body = await request.json();
-          expect(body.username).toBe("alice");
+          expect(body.email).toBe("alice@example.com");
           expect(body.password).toBe("secure-pass");
           return HttpResponse.json({
             access: "token",
@@ -29,18 +29,18 @@ describe("API Service - Authentication Endpoints", () => {
         }),
       );
 
-      await login("alice", "secure-pass");
+      await login("alice@example.com", "secure-pass");
     });
 
     it("should handle authentication failures with 401 response", async () => {
       server.use(
-        http.post(`${API_URL}/token/`, () =>
+        http.post(`${API_URL}/auth/token/`, () =>
           HttpResponse.json({ detail: "Invalid credentials" }, { status: 401 }),
         ),
       );
 
       try {
-        await login("wronguser", "wrongpass");
+        await login("wrong@example.com", "wrongpass");
         expect.fail("Should have thrown an error");
       } catch (err) {
         expect(err.response.status).toBe(401);
@@ -49,10 +49,10 @@ describe("API Service - Authentication Endpoints", () => {
     });
 
     it("should handle network errors gracefully", async () => {
-      server.use(http.post(`${API_URL}/token/`, () => HttpResponse.error()));
+      server.use(http.post(`${API_URL}/auth/token/`, () => HttpResponse.error()));
 
       try {
-        await login("user", "pass");
+        await login("user@example.com", "pass");
         expect.fail("Should have thrown an error");
       } catch (err) {
         expect(err).toBeDefined();
@@ -103,7 +103,7 @@ describe("API Service - Itinerary Endpoints", () => {
 
     it("should handle validation errors on creation", async () => {
       server.use(
-        http.post(`${API_URL}/itineraries/`, () =>
+        http.post(`${API_URL}/itineraries/my/`, () =>
           HttpResponse.json(
             {
               title: ["This field may not be blank."],
@@ -136,7 +136,7 @@ describe("API Service - Request Interceptors", () => {
     localStorage.setItem("access_token", "test-bearer-token");
 
     server.use(
-      http.get(`${API_URL}/itineraries/`, ({ request }) => {
+      http.get(`${API_URL}/itineraries/my/`, ({ request }) => {
         const authHeader = request.headers.get("Authorization");
         expect(authHeader).toBe("Bearer test-bearer-token");
         return HttpResponse.json([]);
@@ -150,7 +150,7 @@ describe("API Service - Request Interceptors", () => {
     localStorage.removeItem("access_token");
 
     server.use(
-      http.get(`${API_URL}/itineraries/`, ({ request }) => {
+      http.get(`${API_URL}/itineraries/my/`, ({ request }) => {
         const authHeader = request.headers.get("Authorization");
         expect(authHeader).toBeNull();
         return HttpResponse.json([]);

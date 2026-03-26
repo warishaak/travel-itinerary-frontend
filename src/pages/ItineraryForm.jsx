@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
-import { createItinerary } from "../services/api";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+import { apiClient, createItinerary } from "../services/api";
 
 export default function ItineraryForm() {
   const { id } = useParams();
@@ -22,13 +20,8 @@ export default function ItineraryForm() {
   useEffect(() => {
     if (!isEdit) return;
 
-    fetch(`${API_URL}/itineraries/${id}/`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to load itinerary");
-        }
-        return response.json();
-      })
+    apiClient.itineraries
+      .get(id)
       .then((data) =>
         setForm({
           title: data.title || "",
@@ -73,15 +66,7 @@ export default function ItineraryForm() {
     setLoading(true);
     try {
       if (isEdit) {
-        const response = await fetch(`${API_URL}/itineraries/${id}/`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to save itinerary.");
-        }
+        await apiClient.itineraries.update(id, form);
       } else {
         await createItinerary(form);
       }

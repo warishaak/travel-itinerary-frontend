@@ -54,7 +54,9 @@ export default function Register() {
           .join(", ");
         setError(errorMessages);
       } else if (typeof errorData === "string") {
-        setError("Registration failed. Server returned an unexpected response.");
+        setError(
+          "Registration failed. Server returned an unexpected response.",
+        );
       } else {
         setError("Registration failed. Please try again.");
       }

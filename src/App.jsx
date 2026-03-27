@@ -5,6 +5,8 @@ import { useAuth } from "./context/useAuth";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 import Home from "./pages/Home.jsx";
 import ItineraryList from "./pages/ItineraryList.jsx";
 import ItineraryForm from "./pages/ItineraryForm.jsx";
@@ -41,6 +43,8 @@ function AppRoutes() {
         path="/register"
         element={user ? <Navigate to="/" replace /> : <Register />}
       />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/explore" element={<PublicTrips />} />
       <Route
         path="/"

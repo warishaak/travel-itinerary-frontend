@@ -70,6 +70,22 @@ export const api = {
         body: JSON.stringify(data),
       });
     },
+    requestPasswordReset: async (email) => {
+      return request("/api/auth/password-reset/request/", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+    },
+    confirmPasswordReset: async (token, password, passwordConfirm) => {
+      return request("/api/auth/password-reset/confirm/", {
+        method: "POST",
+        body: JSON.stringify({
+          token,
+          password,
+          password_confirm: passwordConfirm,
+        }),
+      });
+    },
   },
   itineraries: {
     list: async () => {

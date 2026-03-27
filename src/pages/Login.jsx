@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
 
@@ -10,6 +10,10 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if there's a success message from password reset
+  const successMessage = location.state?.message;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -46,6 +50,7 @@ export default function Login() {
         <h1 style={styles.title}>Welcome back</h1>
         <p style={styles.subtitle}>Sign in to manage your itineraries</p>
         <form onSubmit={handleSubmit} noValidate style={styles.form}>
+          {successMessage && <p style={styles.success}>{successMessage}</p>}
           {error && <p style={styles.error}>{error}</p>}
           <input
             type="text"
@@ -64,6 +69,9 @@ export default function Login() {
             autoComplete="current-password"
             style={styles.input}
           />
+          <Link to="/forgot-password" style={styles.forgotPassword}>
+            Forgot password?
+          </Link>
           <button type="submit" disabled={loading} style={styles.button}>
             {loading ? "Signing in..." : "Sign in"}
           </button>
@@ -109,6 +117,13 @@ const styles = {
     border: "1px solid #e2e8f0",
     borderRadius: 10,
   },
+  forgotPassword: {
+    color: "#0f766e",
+    fontSize: 14,
+    textDecoration: "none",
+    textAlign: "right",
+    marginTop: "-8px",
+  },
   button: {
     padding: 14,
     fontSize: 16,
@@ -119,6 +134,14 @@ const styles = {
     border: "none",
     borderRadius: 10,
     marginTop: 8,
+  },
+  success: {
+    backgroundColor: "#d1fae5",
+    color: "#065f46",
+    padding: 12,
+    borderRadius: 6,
+    margin: 0,
+    fontSize: 14,
   },
   error: { color: "#dc2626", margin: 0, fontSize: 14 },
   footer: {

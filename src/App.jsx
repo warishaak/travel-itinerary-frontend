@@ -1,36 +1,32 @@
-import { useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useNavigate,
-} from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Home from "./pages/Home";
-import ItineraryForm from "./pages/ItineraryForm";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+import Home from "./pages/Home.jsx";
+import ItineraryList from "./pages/ItineraryList.jsx";
+import ItineraryForm from "./pages/ItineraryForm.jsx";
+import ItineraryDetail from "./pages/ItineraryDetail.jsx";
+import Profile from "./pages/Profile.jsx";
+import PublicTrips from "./pages/PublicTrips.jsx";
 
-import ItineraryDetails from "./pages/ItineraryDetails";
+function AppRoutes() {
+  const { user, loading } = useAuth();
 
-// Protected Route wrapper
-const ProtectedRoute = ({ children }) => {
-  const { isLoggedIn } = useAuth();
-  const navigate = useNavigate();
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b" }}>
+        Loading...
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-  }, [isLoggedIn, navigate]);
-
-  return isLoggedIn ? children : null;
-};
-function AppContent() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/register" element={user ? <Navigate to="/" replace /> : <Register />} />
+      <Route path="/explore" element={<PublicTrips />} />
       <Route
         path="/"
         element={
@@ -43,23 +39,15 @@ function AppContent() {
         path="/itineraries"
         element={
           <ProtectedRoute>
-            <Home />
+            <ItineraryList />
           </ProtectedRoute>
         }
       />
       <Route
-        path="/create-itinerary"
+        path="/itineraries/new"
         element={
           <ProtectedRoute>
             <ItineraryForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/itineraries/:id"
-        element={
-          <ProtectedRoute>
-            <ItineraryDetails />
           </ProtectedRoute>
         }
       />
@@ -71,19 +59,33 @@ function AppContent() {
           </ProtectedRoute>
         }
       />
-      <Route path="*" element={<h2>404 Not Found</h2>} />
+      <Route
+        path="/itineraries/:id"
+        element={
+          <ProtectedRoute>
+            <ItineraryDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
 
-function App() {
+export default function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
-
-export default App;

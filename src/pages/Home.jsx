@@ -1,98 +1,61 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { apiClient } from "../services/api";
-import Navbar from "../components/Navbar";
+import React from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import Navbar from "../components/Navbar.jsx";
 
 export default function Home() {
-  const { user, username, logout } = useAuth();
-  const navigate = useNavigate();
-  const [itineraries, setItineraries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    apiClient.itineraries
-      .getAll()
-      .then(setItineraries)
-      .catch(() => setError("Failed to load itineraries"))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
+  const { user, logout } = useAuth();
   return (
-    <div className="home-container">
+    <div style={styles.container}>
       <Navbar>
-        <Link to="/" className="navbar-link">
-          Home
-        </Link>
-        <Link to="/create-itinerary" className="navbar-link">
-          Create
-        </Link>
-        <span className="navbar-email">{username || user?.email}</span>
-        <button onClick={handleLogout} className="navbar-logout-btn">
-          Logout
-        </button>
+        <Link to="/explore" style={styles.navLink}>Explore</Link>
+        <Link to="/profile" style={styles.email}>{user?.email}</Link>
+        <button onClick={logout} style={styles.logoutBtn}>Logout</button>
       </Navbar>
-      <div className="home-content">
-        <h1 className="home-title">My Itineraries</h1>
-        <p className="home-subtitle">
-          Plan and manage your travel itineraries in one place.
-        </p>
-
-        {error && <p className="itinerary-error">{error}</p>}
-
-        {loading ? (
-          <p className="home-loading">Loading itineraries...</p>
-        ) : itineraries.length === 0 ? (
-          <div className="home-empty-state">
-            <p className="home-empty-text">
-              No itineraries yet. Create your first one!
-            </p>
-            <Link to="/create-itinerary" className="home-cta">
-              Create New Itinerary
-            </Link>
-          </div>
-        ) : (
-          <div className="home-itineraries-container">
-            <div className="home-itineraries-header">
-              <h2 className="home-itineraries-title">Your Itineraries</h2>
-              <Link to="/create-itinerary" className="home-cta home-cta-small">
-                + New
-              </Link>
-            </div>
-            <div className="home-itineraries-list">
-              {itineraries.map((itinerary) => (
-                <Link
-                  key={itinerary.id}
-                  to={`/itineraries/${itinerary.id}`}
-                  className="itinerary-card"
-                >
-                  <h3 className="itinerary-card-title">{itinerary.title}</h3>
-                  <p className="itinerary-card-destination">
-                    📍 {itinerary.destination}
-                  </p>
-                  <p className="itinerary-card-dates">
-                    🗓️ {itinerary.start_date} → {itinerary.end_date}
-                  </p>
-                  {itinerary.activities && itinerary.activities.length > 0 && (
-                    <p className="itinerary-card-activities">
-                      {itinerary.activities.length}{" "}
-                      {itinerary.activities.length === 1
-                        ? "activity"
-                        : "activities"}
-                    </p>
-                  )}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
+      <div style={styles.content}>
+        <h1 style={styles.title}>My Itineraries</h1>
+        <p style={styles.subtitle}>Plan and manage your travel itineraries in one place.</p>
+        <Link to="/itineraries" style={styles.cta}>View Itineraries</Link>
       </div>
     </div>
   );
 }
+
+const styles = {
+  container: { minHeight: "100vh" },
+  navLink: {
+    color: "#0f766e",
+    textDecoration: "none",
+    fontSize: 14,
+    fontWeight: 600,
+  },
+  email: { color: "#64748b", textDecoration: "none", fontSize: 14 },
+  logoutBtn: {
+    padding: "8px 16px",
+    cursor: "pointer",
+    background: "transparent",
+    color: "#64748b",
+    border: "1px solid #e2e8f0",
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 500,
+  },
+  content: {
+    padding: "4rem 2rem",
+    maxWidth: 560,
+    margin: "0 auto",
+    textAlign: "center",
+  },
+  title: { fontSize: 32, fontWeight: 700, color: "#1a1a2e", marginBottom: 12 },
+  subtitle: { fontSize: 18, color: "#64748b", marginBottom: 32 },
+  cta: {
+    display: "inline-block",
+    padding: "14px 28px",
+    background: "#0f766e",
+    color: "white",
+    borderRadius: 10,
+    textDecoration: "none",
+    fontSize: 16,
+    fontWeight: 600,
+  },
+};

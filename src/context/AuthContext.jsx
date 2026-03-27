@@ -1,88 +1,62 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useState, useContext } from "react";
-
-const LOCAL_STORAGE_NAMESPACE = "appAuthentication";
-
-const authStorage = {
-  set: (key, value) => {
-    const item = JSON.stringify(value);
-    localStorage.setItem(`${LOCAL_STORAGE_NAMESPACE}.${key}`, item);
-  },
-  get: (key) => {
-    const item = localStorage.getItem(`${LOCAL_STORAGE_NAMESPACE}.${key}`);
-    return item ? JSON.parse(item) : null;
-  },
-  remove: (key) => {
-    localStorage.removeItem(`${LOCAL_STORAGE_NAMESPACE}.${key}`);
-  },
-  clear: () => {
-    Object.keys(localStorage)
-      .filter((key) => key.startsWith(`${LOCAL_STORAGE_NAMESPACE}.`))
-      .forEach((key) => localStorage.removeItem(key));
-  },
-};
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { api } from "../services/api";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    const token = authStorage.get("access_token");
-    const storedUsername = authStorage.get("username");
-    return !!(token && storedUsername);
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const [username, setUsername] = useState(() => {
-    const storedUsername = authStorage.get("username");
-    return storedUsername || null;
-  });
-
-  const checkLoginStatus = () => {
-    const token = authStorage.get("access_token");
-    const storedUsername = authStorage.get("username");
-    if (token && storedUsername) {
-      setIsLoggedIn(true);
-      setUsername(storedUsername);
-    } else {
-      setIsLoggedIn(false);
-      setUsername(null);
+  const loadUser = useCallback(async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
     }
-  };
+    try {
+      const data = await api.auth.me();
+      setUser(data);
+    } catch {
+      setUser(null);
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const login = (accessToken, refreshToken, user) => {
-    authStorage.set("access_token", accessToken);
-    authStorage.set("refresh_token", refreshToken);
-    authStorage.set("username", user);
-    setIsLoggedIn(true);
-    setUsername(user);
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
+
+  const login = (accessToken, refreshToken) => {
+    localStorage.setItem("access_token", accessToken);
+    if (refreshToken) localStorage.setItem("refresh_token", refreshToken || "");
+    localStorage.setItem("refresh_token", refreshToken || "");
+    loadUser();
   };
 
   const logout = () => {
-    authStorage.clear();
-    setIsLoggedIn(false);
-    setUsername(null);
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    setUser(null);
   };
 
-  const getAccessToken = () => authStorage.get("access_token");
-  const getRefreshToken = () => authStorage.get("refresh_token");
-
   return (
-    <AuthContext.Provider
-      value={{
-        isLoggedIn,
-        username,
-        user: { email: username ? `${username}@example.com` : null },
-        login,
-        logout,
-        checkLoginStatus,
-        getAccessToken,
-        getRefreshToken,
-      }}
-    >
+    <AuthContext.Provider value={{ user, loading, login, logout, loadUser }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 }

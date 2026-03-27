@@ -1,101 +1,96 @@
-import axios from "axios";
+const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+async function request(endpoint, options = {}) {
+  const url = `${API_BASE}${endpoint}`;
+  const headers = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
 
-const api = axios.create({
-  baseURL: API_URL,
-});
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
-const getAccessToken = () => {
-  const namespacedToken = localStorage.getItem(
-    "appAuthentication.access_token",
-  );
-  if (namespacedToken) {
-    try {
-      return JSON.parse(namespacedToken);
-    } catch {
-      return namespacedToken;
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    // Don't redirect for login attempts—let the Login component show the error
+    if (!url.includes("/api/auth/token/")) {
+      window.location.href = "/login";
+      return;
     }
   }
-  return localStorage.getItem("access_token");
-};
 
-// Add auth token to all requests
-api.interceptors.request.use(
-  (config) => {
-    const token = getAccessToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
-);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw errorData;
+  }
 
-export const login = async (email, password) => {
-  const response = await api.post("/auth/token/", { email, password });
-  return response.data;
-};
+  return response.json();
+}
 
-export const register = async (
-  email,
-  password,
-  firstName = "",
-  lastName = "",
-) => {
-  const response = await api.post("/auth/register/", {
-    email,
-    password,
-    password_confirm: password,
-    first_name: firstName,
-    last_name: lastName,
-  });
-  return response.data;
-};
-
-export const refreshToken = async (refreshToken) => {
-  const response = await api.post("/auth/token/refresh/", {
-    refresh: refreshToken,
-  });
-  return response.data;
-};
-
-export const createItinerary = async (data) => {
-  const response = await api.post("/itineraries/my/", data);
-  return response.data;
-};
-
-export const getItineraries = async () => {
-  const response = await api.get("/itineraries/my/");
-  return response.data;
-};
-
-// API object with structured methods
-export const apiClient = {
-  itineraries: {
-    get: async (id) => {
-      const response = await api.get(`/itineraries/my/${id}/`);
-      return response.data;
+export const api = {
+  auth: {
+    login: async (email, password) => {
+      return request("/api/auth/token/", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
     },
-    getAll: async () => {
-      const response = await api.get("/itineraries/my/");
-      return response.data;
+    register: async (email, password, passwordConfirm, firstName = "", lastName = "") => {
+      return request("/api/auth/register/", {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          password,
+          password_confirm: passwordConfirm,
+          first_name: firstName,
+          last_name: lastName,
+        }),
+      });
+    },
+    me: async () => {
+      return request("/api/auth/me/");
+    },
+    updateProfile: async (data) => {
+      return request("/api/auth/me/", {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      });
+    },
+  },
+  itineraries: {
+    list: async () => {
+      return request("/api/itineraries/my/");
+    },
+    listPublic: async () => {
+      return request("/api/itineraries/public/");
+    },
+    get: async (id) => {
+      return request(`/api/itineraries/my/${id}/`);
     },
     create: async (data) => {
-      const response = await api.post("/itineraries/my/", data);
-      return response.data;
+      return request("/api/itineraries/my/", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     update: async (id, data) => {
-      const response = await api.put(`/itineraries/my/${id}/`, data);
-      return response.data;
+      return request(`/api/itineraries/my/${id}/`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
     },
     delete: async (id) => {
-      const response = await api.delete(`/itineraries/my/${id}/`);
-      return response.data;
+      return request(`/api/itineraries/my/${id}/`, {
+        method: "DELETE",
+      });
     },
   },
 };
-
-export default api;

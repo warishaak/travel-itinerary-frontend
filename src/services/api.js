@@ -1,4 +1,4 @@
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_BASE = import.meta.env.REACT_APP_API_URL || "http://localhost:8000";
 
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
@@ -43,7 +43,13 @@ export const api = {
         body: JSON.stringify({ email, password }),
       });
     },
-    register: async (email, password, passwordConfirm, firstName = "", lastName = "") => {
+    register: async (
+      email,
+      password,
+      passwordConfirm,
+      firstName = "",
+      lastName = "",
+    ) => {
       return request("/api/auth/register/", {
         method: "POST",
         body: JSON.stringify({

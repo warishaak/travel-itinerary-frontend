@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
-import Navbar, { navStyles } from "../components/Navbar.jsx";
+import Navbar from "../components/Navbar.jsx";
+import { navStyles } from "../components/navStyles";
 
 export default function ItineraryList() {
   const [itineraries, setItineraries] = useState([]);
@@ -21,11 +22,21 @@ export default function ItineraryList() {
   return (
     <div style={styles.container}>
       <Navbar>
-        <Link to="/itineraries" style={navStyles.navLink}>My Trips</Link>
-        <Link to="/explore" style={navStyles.navLink}>Explore</Link>
-        <Link to="/itineraries/new" style={navStyles.btn}>+ New</Link>
-        <Link to="/profile" style={navStyles.navLink}>Profile</Link>
-        <button onClick={logout} style={navStyles.logoutBtn}>Logout</button>
+        <Link to="/itineraries" style={navStyles.navLink}>
+          My Trips
+        </Link>
+        <Link to="/explore" style={navStyles.navLink}>
+          Explore
+        </Link>
+        <Link to="/itineraries/new" style={navStyles.btn}>
+          + New
+        </Link>
+        <Link to="/profile" style={navStyles.navLink}>
+          Profile
+        </Link>
+        <button onClick={logout} style={navStyles.logoutBtn}>
+          Logout
+        </button>
       </Navbar>
       <div style={styles.content}>
         <h1 style={styles.title}>My Itineraries</h1>
@@ -35,15 +46,23 @@ export default function ItineraryList() {
         ) : itineraries.length === 0 ? (
           <div style={styles.empty}>
             <p style={styles.emptyText}>No itineraries yet.</p>
-            <Link to="/itineraries/new" style={styles.emptyLink}>Create your first one</Link>
+            <Link to="/itineraries/new" style={styles.emptyLink}>
+              Create your first one
+            </Link>
           </div>
         ) : (
           <div style={styles.grid}>
             {itineraries.map((it) => (
-              <Link key={it.id} to={`/itineraries/${it.id}`} style={styles.card}>
+              <Link
+                key={it.id}
+                to={`/itineraries/${it.id}`}
+                style={styles.card}
+              >
                 <h3 style={styles.cardTitle}>{it.title}</h3>
                 <p style={styles.cardDest}>{it.destination}</p>
-                <p style={styles.cardDates}>{it.start_date} → {it.end_date}</p>
+                <p style={styles.cardDates}>
+                  {it.start_date} → {it.end_date}
+                </p>
               </Link>
             ))}
           </div>
@@ -68,7 +87,11 @@ const styles = {
   },
   emptyText: { color: "#64748b", marginBottom: 12 },
   emptyLink: { color: "#0f766e", fontWeight: 600, textDecoration: "none" },
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    gap: 20,
+  },
   card: {
     display: "block",
     padding: 24,

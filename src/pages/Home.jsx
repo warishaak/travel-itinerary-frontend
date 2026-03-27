@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/useAuth";
 import Navbar from "../components/Navbar.jsx";
 
 export default function Home() {
@@ -8,14 +8,24 @@ export default function Home() {
   return (
     <div style={styles.container}>
       <Navbar>
-        <Link to="/explore" style={styles.navLink}>Explore</Link>
-        <Link to="/profile" style={styles.email}>{user?.email}</Link>
-        <button onClick={logout} style={styles.logoutBtn}>Logout</button>
+        <Link to="/explore" style={styles.navLink}>
+          Explore
+        </Link>
+        <Link to="/profile" style={styles.email}>
+          {user?.email}
+        </Link>
+        <button onClick={logout} style={styles.logoutBtn}>
+          Logout
+        </button>
       </Navbar>
       <div style={styles.content}>
         <h1 style={styles.title}>My Itineraries</h1>
-        <p style={styles.subtitle}>Plan and manage your travel itineraries in one place.</p>
-        <Link to="/itineraries" style={styles.cta}>View Itineraries</Link>
+        <p style={styles.subtitle}>
+          Plan and manage your travel itineraries in one place.
+        </p>
+        <Link to="/itineraries" style={styles.cta}>
+          View Itineraries
+        </Link>
       </div>
     </div>
   );

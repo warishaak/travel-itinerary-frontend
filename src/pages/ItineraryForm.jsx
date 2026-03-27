@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
-import Navbar, { navStyles } from "../components/Navbar.jsx";
+import Navbar from "../components/Navbar.jsx";
+import { navStyles } from "../components/navStyles";
 
 export default function ItineraryForm() {
   const { id } = useParams();
@@ -32,7 +33,7 @@ export default function ItineraryForm() {
             end_date: data.end_date,
             is_public: data.is_public || false,
             activities: data.activities || [],
-          })
+          }),
         )
         .catch(() => setError("Failed to load itinerary"));
     }
@@ -40,7 +41,10 @@ export default function ItineraryForm() {
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   }
 
   async function handleSubmit(e) {
@@ -85,11 +89,17 @@ export default function ItineraryForm() {
   return (
     <div style={styles.container}>
       <Navbar>
-        <Link to="/itineraries" style={navStyles.navLink}>← Back</Link>
-        <button onClick={logout} style={navStyles.logoutBtn}>Logout</button>
+        <Link to="/itineraries" style={navStyles.navLink}>
+          ← Back
+        </Link>
+        <button onClick={logout} style={navStyles.logoutBtn}>
+          Logout
+        </button>
       </Navbar>
       <div style={styles.content}>
-        <h1 style={styles.title}>{isEdit ? "Edit Itinerary" : "New Itinerary"}</h1>
+        <h1 style={styles.title}>
+          {isEdit ? "Edit Itinerary" : "New Itinerary"}
+        </h1>
         {error && <p style={styles.error}>{error}</p>}
         <form onSubmit={handleSubmit} noValidate style={styles.form}>
           <input
@@ -136,7 +146,9 @@ export default function ItineraryForm() {
             <button type="submit" disabled={loading} style={styles.submit}>
               {loading ? "Saving..." : isEdit ? "Update" : "Create"}
             </button>
-            <Link to="/itineraries" style={styles.cancel}>Cancel</Link>
+            <Link to="/itineraries" style={styles.cancel}>
+              Cancel
+            </Link>
           </div>
         </form>
       </div>

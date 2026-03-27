@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
-import Navbar, { navStyles } from "../components/Navbar.jsx";
+import Navbar from "../components/Navbar.jsx";
+import { navStyles } from "../components/navStyles";
 
 export default function Profile() {
   const { user, logout, loadUser } = useAuth();
@@ -25,7 +26,10 @@ export default function Profile() {
     setSuccess("");
     setLoading(true);
     try {
-      await api.auth.updateProfile({ first_name: firstName, last_name: lastName });
+      await api.auth.updateProfile({
+        first_name: firstName,
+        last_name: lastName,
+      });
       loadUser();
       setSuccess("Profile updated.");
     } catch (err) {
@@ -38,8 +42,12 @@ export default function Profile() {
   return (
     <div style={styles.container}>
       <Navbar>
-        <Link to="/itineraries" style={navStyles.navLink}>← Back</Link>
-        <button onClick={logout} style={navStyles.logoutBtn}>Logout</button>
+        <Link to="/itineraries" style={navStyles.navLink}>
+          ← Back
+        </Link>
+        <button onClick={logout} style={navStyles.logoutBtn}>
+          Logout
+        </button>
       </Navbar>
       <div style={styles.content}>
         <div style={styles.card}>
@@ -80,7 +88,12 @@ const styles = {
     boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
     border: "1px solid #f1f5f9",
   },
-  title: { fontSize: 28, fontWeight: 700, color: "#1a1a2e", margin: "0 0 8px 0" },
+  title: {
+    fontSize: 28,
+    fontWeight: 700,
+    color: "#1a1a2e",
+    margin: "0 0 8px 0",
+  },
   email: { fontSize: 14, color: "#64748b", margin: "0 0 24px 0" },
   form: { display: "flex", flexDirection: "column", gap: 16 },
   input: {

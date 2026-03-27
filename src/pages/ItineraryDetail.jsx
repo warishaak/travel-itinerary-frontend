@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
-import { apiClient as api } from "../services/api";
+import { useAuth } from "../context/useAuth";
+import { api } from "../services/api";
 import Navbar from "../components/Navbar.jsx";
 
 export default function ItineraryDetail() {

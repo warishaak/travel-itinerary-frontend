@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
 
 export default function Register() {
@@ -39,12 +39,22 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await api.auth.register(email, password, passwordConfirm, firstName, lastName);
+      await api.auth.register(
+        email,
+        password,
+        passwordConfirm,
+        firstName,
+        lastName,
+      );
       const data = await api.auth.login(email, password);
       login(data.access, data.refresh);
       navigate("/", { replace: true });
     } catch (err) {
-      const msg = err.email?.[0] || err.password?.[0] || err.password_confirm?.[0] || "Registration failed.";
+      const msg =
+        err.email?.[0] ||
+        err.password?.[0] ||
+        err.password_confirm?.[0] ||
+        "Registration failed.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -102,7 +112,10 @@ export default function Register() {
           </button>
         </form>
         <p style={styles.footer}>
-          Already have an account? <Link to="/login" style={styles.link}>Sign in</Link>
+          Already have an account?{" "}
+          <Link to="/login" style={styles.link}>
+            Sign in
+          </Link>
         </p>
       </div>
     </div>
@@ -125,7 +138,12 @@ const styles = {
     borderRadius: 16,
     boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)",
   },
-  title: { fontSize: 28, fontWeight: 700, color: "#1a1a2e", margin: "0 0 8px 0" },
+  title: {
+    fontSize: 28,
+    fontWeight: 700,
+    color: "#1a1a2e",
+    margin: "0 0 8px 0",
+  },
   subtitle: { fontSize: 15, color: "#64748b", margin: "0 0 24px 0" },
   form: { display: "flex", flexDirection: "column", gap: 16 },
   input: {
@@ -146,6 +164,11 @@ const styles = {
     marginTop: 8,
   },
   error: { color: "#dc2626", margin: 0, fontSize: 14 },
-  footer: { marginTop: 24, textAlign: "center", color: "#64748b", fontSize: 14 },
+  footer: {
+    marginTop: 24,
+    textAlign: "center",
+    color: "#64748b",
+    fontSize: 14,
+  },
   link: { color: "#0f766e", fontWeight: 600, textDecoration: "none" },
 };

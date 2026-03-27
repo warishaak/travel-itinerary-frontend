@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
-import Navbar, { navStyles } from "../components/Navbar.jsx";
+import Navbar from "../components/Navbar.jsx";
+import { navStyles } from "../components/navStyles";
 
 export default function PublicTrips() {
   const [trips, setTrips] = useState([]);
@@ -23,23 +24,39 @@ export default function PublicTrips() {
       <Navbar>
         {user ? (
           <>
-            <Link to="/itineraries" style={navStyles.navLink}>My Trips</Link>
-            <Link to="/explore" style={navStyles.navLink}>Explore</Link>
-            <Link to="/profile" style={navStyles.navLink}>Profile</Link>
-            <button onClick={logout} style={navStyles.logoutBtn}>Logout</button>
+            <Link to="/itineraries" style={navStyles.navLink}>
+              My Trips
+            </Link>
+            <Link to="/explore" style={navStyles.navLink}>
+              Explore
+            </Link>
+            <Link to="/profile" style={navStyles.navLink}>
+              Profile
+            </Link>
+            <button onClick={logout} style={navStyles.logoutBtn}>
+              Logout
+            </button>
           </>
         ) : (
           <>
-            <Link to="/explore" style={navStyles.navLink}>Explore</Link>
-            <Link to="/login" style={navStyles.btn}>Login</Link>
-            <Link to="/register" style={navStyles.btn}>Register</Link>
+            <Link to="/explore" style={navStyles.navLink}>
+              Explore
+            </Link>
+            <Link to="/login" style={navStyles.btn}>
+              Login
+            </Link>
+            <Link to="/register" style={navStyles.btn}>
+              Register
+            </Link>
           </>
         )}
       </Navbar>
       <div style={styles.content}>
         <div style={styles.header}>
           <h1 style={styles.title}>Explore Public Trips</h1>
-          <p style={styles.subtitle}>Discover amazing travel itineraries shared by our community</p>
+          <p style={styles.subtitle}>
+            Discover amazing travel itineraries shared by our community
+          </p>
         </div>
         {error && <p style={styles.error}>{error}</p>}
         {loading ? (
@@ -49,7 +66,10 @@ export default function PublicTrips() {
             <p style={styles.emptyText}>No public trips available yet.</p>
             {user && (
               <p style={styles.emptyHint}>
-                <Link to="/itineraries/new" style={styles.emptyLink}>Create a public trip</Link> to share your travel plans!
+                <Link to="/itineraries/new" style={styles.emptyLink}>
+                  Create a public trip
+                </Link>{" "}
+                to share your travel plans!
               </p>
             )}
           </div>
@@ -65,7 +85,8 @@ export default function PublicTrips() {
                 </p>
                 {trip.activities && trip.activities.length > 0 && (
                   <p style={styles.cardActivities}>
-                    {trip.activities.length} {trip.activities.length === 1 ? 'activity' : 'activities'}
+                    {trip.activities.length}{" "}
+                    {trip.activities.length === 1 ? "activity" : "activities"}
                   </p>
                 )}
               </div>
@@ -98,7 +119,7 @@ const styles = {
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-    gap: 24
+    gap: 24,
   },
   card: {
     position: "relative",
@@ -138,7 +159,7 @@ const styles = {
   cardDates: {
     fontSize: 14,
     color: "#94a3b8",
-    margin: "0 0 12px 0"
+    margin: "0 0 12px 0",
   },
   cardActivities: {
     fontSize: 13,

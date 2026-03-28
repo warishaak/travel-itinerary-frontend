@@ -2,6 +2,10 @@ staticSites:
   - name: travel-itinerary-frontend
     buildCommand: npm config set registry https://registry.npmjs.org && npm ci && npm run build
     publishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: NPM_CONFIG_REGISTRY
         value: https://registry.npmjs.org/

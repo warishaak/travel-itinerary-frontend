@@ -4,11 +4,13 @@ import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
 import Navbar from "../components/Navbar.jsx";
 import { navStyles } from "../components/navStyles";
+import ProfileImageUpload from "../components/ProfileImageUpload.jsx";
 
 export default function Profile() {
   const { user, logout, loadUser } = useAuth();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [profileImage, setProfileImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -17,6 +19,7 @@ export default function Profile() {
     if (user) {
       setFirstName(user.first_name || "");
       setLastName(user.last_name || "");
+      setProfileImage(user.profile_image || null);
     }
   }, [user]);
 
@@ -29,6 +32,7 @@ export default function Profile() {
       await api.auth.updateProfile({
         first_name: firstName,
         last_name: lastName,
+        profile_image: profileImage,
       });
       loadUser();
       setSuccess("Profile updated.");
@@ -41,7 +45,7 @@ export default function Profile() {
 
   return (
     <div style={styles.container}>
-      <Navbar>
+      <Navbar user={user}>
         <Link to="/itineraries" style={navStyles.navLink}>
           ← Back
         </Link>
@@ -56,6 +60,10 @@ export default function Profile() {
           {error && <p style={styles.error}>{error}</p>}
           {success && <p style={styles.success}>{success}</p>}
           <form onSubmit={handleSubmit} style={styles.form}>
+            <ProfileImageUpload
+              imageUrl={profileImage}
+              onChange={setProfileImage}
+            />
             <input
               placeholder="First name"
               value={firstName}

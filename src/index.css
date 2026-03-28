@@ -25,3 +25,275 @@ button:focus {
   outline: 2px solid #0ea5e9;
   outline-offset: 2px;
 }
+
+/* Itinerary Detail Styles */
+.detail-container {
+  min-height: 100vh;
+}
+
+.detail-content {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.detail-loading,
+.detail-error {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+}
+
+.detail-error {
+  color: #dc2626;
+}
+
+.detail-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.detail-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 1rem;
+}
+
+.detail-dest,
+.detail-dates {
+  margin: 0.5rem 0;
+  color: #475569;
+}
+
+.detail-images-section {
+  margin: 2rem 0;
+}
+
+.detail-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 1rem;
+}
+
+.detail-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.detail-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.detail-section {
+  margin-top: 2rem;
+}
+
+.detail-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.detail-add-input {
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.detail-add-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.detail-day-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.detail-day-input {
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 80px;
+}
+
+.detail-add-btn {
+  padding: 12px 20px;
+  background: #0f766e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.detail-empty-items {
+  color: #94a3b8;
+  padding: 2rem;
+  text-align: center;
+  font-style: italic;
+}
+
+.detail-item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-item {
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.detail-day-badge {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 4px 8px;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.detail-item-desc {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.detail-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.detail-small-btn {
+  padding: 6px 12px;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.detail-small-btn-danger {
+  padding: 6px 12px;
+  background: white;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.detail-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.detail-edit-input {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.detail-edit-actions {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.detail-save-btn {
+  padding: 10px 16px;
+  background: #0f766e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.detail-cancel-btn {
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.detail-edit-btn {
+  padding: 12px 24px;
+  background: #0f766e;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.detail-delete-btn {
+  padding: 12px 24px;
+  background: white;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Navbar Styles */
+.navbar-link {
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.navbar-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-logout-btn {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}

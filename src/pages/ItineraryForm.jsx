@@ -4,12 +4,13 @@ import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
 import Navbar from "../components/Navbar.jsx";
 import { navStyles } from "../components/navStyles";
+import ImageUpload from "../components/ImageUpload.jsx";
 
 export default function ItineraryForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [form, setForm] = useState({
     title: "",
     destination: "",
@@ -17,6 +18,7 @@ export default function ItineraryForm() {
     end_date: "",
     is_public: false,
     activities: [],
+    images: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -33,6 +35,7 @@ export default function ItineraryForm() {
             end_date: data.end_date,
             is_public: data.is_public || false,
             activities: data.activities || [],
+            images: data.images || [],
           }),
         )
         .catch(() => setError("Failed to load itinerary"));
@@ -88,7 +91,7 @@ export default function ItineraryForm() {
 
   return (
     <div style={styles.container}>
-      <Navbar>
+      <Navbar user={user}>
         <Link to="/itineraries" style={navStyles.navLink}>
           ← Back
         </Link>
@@ -142,6 +145,10 @@ export default function ItineraryForm() {
             />
             <span>Make this trip public (visible to everyone)</span>
           </label>
+          <ImageUpload
+            images={form.images}
+            onChange={(images) => setForm((prev) => ({ ...prev, images }))}
+          />
           <div style={styles.actions}>
             <button type="submit" disabled={loading} style={styles.submit}>
               {loading ? "Saving..." : isEdit ? "Update" : "Create"}

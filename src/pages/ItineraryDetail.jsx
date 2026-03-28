@@ -7,7 +7,7 @@ import Navbar from "../components/Navbar.jsx";
 export default function ItineraryDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [itinerary, setItinerary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -117,7 +117,7 @@ export default function ItineraryDetail() {
   if (loading)
     return (
       <div className="detail-container">
-        <Navbar>
+        <Navbar user={user}>
           <div />
         </Navbar>
         <div className="detail-content">
@@ -128,7 +128,7 @@ export default function ItineraryDetail() {
   if (error && !itinerary)
     return (
       <div className="detail-container">
-        <Navbar>
+        <Navbar user={user}>
           <Link to="/itineraries" className="navbar-link">
             ← Back
           </Link>
@@ -141,7 +141,7 @@ export default function ItineraryDetail() {
 
   return (
     <div className="detail-container">
-      <Navbar>
+      <Navbar user={user}>
         <Link to="/itineraries" className="navbar-link">
           ← Back
         </Link>
@@ -159,6 +159,23 @@ export default function ItineraryDetail() {
             <strong>Dates:</strong> {itinerary.start_date} to{" "}
             {itinerary.end_date}
           </p>
+
+          {/* Trip Images */}
+          {itinerary.images && itinerary.images.length > 0 && (
+            <div className="detail-images-section">
+              <h3 className="detail-section-title">Trip Photos</h3>
+              <div className="detail-images-grid">
+                {itinerary.images.map((url, index) => (
+                  <img
+                    key={index}
+                    src={url}
+                    alt={`Trip ${index + 1}`}
+                    className="detail-image"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="detail-section">
             <h3 className="detail-section-title">Things to do</h3>

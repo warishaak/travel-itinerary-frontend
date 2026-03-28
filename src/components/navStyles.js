@@ -39,4 +39,17 @@ export const navStyles = {
     fontSize: 14,
     fontWeight: 500,
   },
+  profileLink: {
+    textDecoration: "none",
+    display: "flex",
+    alignItems: "center",
+  },
+  profileAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    objectFit: "cover",
+    border: "2px solid #e2e8f0",
+    transition: "border-color 0.2s",
+  },
 };

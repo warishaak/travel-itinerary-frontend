@@ -9,7 +9,7 @@ export default function ItineraryList() {
   const [itineraries, setItineraries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   useEffect(() => {
     api.itineraries
@@ -21,7 +21,7 @@ export default function ItineraryList() {
 
   return (
     <div style={styles.container}>
-      <Navbar>
+      <Navbar user={user}>
         <Link to="/itineraries" style={navStyles.navLink}>
           My Trips
         </Link>

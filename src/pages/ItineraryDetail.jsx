@@ -29,9 +29,15 @@ export default function ItineraryDetail() {
     api.itineraries
       .get(id)
       .then(setItinerary)
-      .catch(() => setError("Failed to load itinerary"))
+      .catch((err) => {
+        if (err?.status === 404) {
+          navigate("/itineraries", { replace: true });
+          return;
+        }
+        setError(err?.detail || "Failed to load itinerary");
+      })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, navigate]);
 
   async function saveActivities(activities) {
     setSaving(true);
@@ -55,8 +61,13 @@ export default function ItineraryDetail() {
     try {
       await api.itineraries.delete(id);
       navigate("/itineraries", { replace: true });
-    } catch {
-      setError("Failed to delete");
+    } catch (err) {
+      const message = err?.detail || err?.message || "";
+      if (/access to storage is not allowed from this context/i.test(message)) {
+        navigate("/itineraries", { replace: true });
+        return;
+      }
+      setError(message || "Failed to delete itinerary");
     } finally {
       setDeleting(false);
     }

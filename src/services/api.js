@@ -1,5 +1,50 @@
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+let storageUnavailable = false;
+
+function safeGetItem(key) {
+  if (storageUnavailable || typeof window === "undefined") {
+    return null;
+  }
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    storageUnavailable = true;
+    return null;
+  }
+}
+
+function safeRemoveItem(key) {
+  if (storageUnavailable || typeof window === "undefined") {
+    return;
+  }
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    storageUnavailable = true;
+    // Ignore storage errors in restricted browser contexts.
+  }
+}
+
+async function parseResponseBody(response) {
+  // 204/205 responses have no response body by definition.
+  if (response.status === 204 || response.status === 205) {
+    return null;
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    try {
+      return await response.json();
+    } catch {
+      return null;
+    }
+  }
+
+  const text = await response.text();
+  return text ? { detail: text } : null;
+}
+
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
   const headers = {
@@ -7,7 +52,7 @@ async function request(endpoint, options = {}) {
     ...options.headers,
   };
 
-  const token = localStorage.getItem("access_token");
+  const token = safeGetItem("access_token");
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
@@ -18,8 +63,8 @@ async function request(endpoint, options = {}) {
   });
 
   if (response.status === 401) {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    safeRemoveItem("access_token");
+    safeRemoveItem("refresh_token");
     // Don't redirect for login attempts—let the Login component show the error
     if (!url.includes("/api/auth/token/")) {
       window.location.href = "/login";
@@ -28,11 +73,17 @@ async function request(endpoint, options = {}) {
   }
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw errorData;
+    const errorData = (await parseResponseBody(response)) || {};
+    if (errorData && typeof errorData === "object") {
+      throw { status: response.status, ...errorData };
+    }
+    throw {
+      status: response.status,
+      detail: String(errorData || "Request failed"),
+    };
   }
 
-  return response.json();
+  return parseResponseBody(response);
 }
 
 export const api = {

@@ -5,12 +5,36 @@ const AuthContext = createContext(null);
 
 export { AuthContext };
 
+function safeGetItem(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Ignore storage write failures (e.g., blocked storage context).
+  }
+}
+
+function safeRemoveItem(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Ignore storage cleanup failures in restricted contexts.
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const loadUser = useCallback(async () => {
-    const token = localStorage.getItem("access_token");
+    const token = safeGetItem("access_token");
     if (!token) {
       setUser(null);
       setLoading(false);
@@ -21,8 +45,8 @@ export function AuthProvider({ children }) {
       setUser(data);
     } catch {
       setUser(null);
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
+      safeRemoveItem("access_token");
+      safeRemoveItem("refresh_token");
     } finally {
       setLoading(false);
     }
@@ -38,15 +62,14 @@ export function AuthProvider({ children }) {
   }, [loadUser]);
 
   const login = (accessToken, refreshToken) => {
-    localStorage.setItem("access_token", accessToken);
-    if (refreshToken) localStorage.setItem("refresh_token", refreshToken || "");
-    localStorage.setItem("refresh_token", refreshToken || "");
+    safeSetItem("access_token", accessToken);
+    safeSetItem("refresh_token", refreshToken || "");
     loadUser();
   };
 
   const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    safeRemoveItem("access_token");
+    safeRemoveItem("refresh_token");
     setUser(null);
   };
 

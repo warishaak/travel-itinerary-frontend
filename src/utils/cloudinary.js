@@ -8,7 +8,9 @@ export async function uploadToCloudinary(file) {
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   if (!cloudName || !uploadPreset) {
-    throw new Error("Cloudinary is not configured. Check your .env file.");
+    throw new Error(
+      "Cloudinary is not configured. Set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET in your frontend env file."
+    );
   }
 
   const formData = new FormData();

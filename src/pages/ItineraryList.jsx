@@ -19,6 +19,19 @@ export default function ItineraryList() {
       .finally(() => setLoading(false));
   }, []);
 
+  function getPreviewImage(itinerary) {
+    if (Array.isArray(itinerary.images) && itinerary.images.length > 0) {
+      return itinerary.images[0];
+    }
+    if (typeof itinerary.image === "string" && itinerary.image) {
+      return itinerary.image;
+    }
+    if (typeof itinerary.image_url === "string" && itinerary.image_url) {
+      return itinerary.image_url;
+    }
+    return "";
+  }
+
   return (
     <div style={styles.container}>
       <Navbar user={user}>
@@ -52,19 +65,31 @@ export default function ItineraryList() {
           </div>
         ) : (
           <div style={styles.grid}>
-            {itineraries.map((it) => (
-              <Link
-                key={it.id}
-                to={`/itineraries/${it.id}`}
-                style={styles.card}
-              >
-                <h3 style={styles.cardTitle}>{it.title}</h3>
-                <p style={styles.cardDest}>{it.destination}</p>
-                <p style={styles.cardDates}>
-                  {it.start_date} → {it.end_date}
-                </p>
-              </Link>
-            ))}
+            {itineraries.map((it) => {
+              const previewImage = getPreviewImage(it);
+
+              return (
+                <Link
+                  key={it.id}
+                  to={`/itineraries/${it.id}`}
+                  style={styles.card}
+                >
+                  {previewImage && (
+                    <img
+                      src={previewImage}
+                      alt={`${it.title} preview`}
+                      style={styles.cardImage}
+                      loading="lazy"
+                    />
+                  )}
+                  <h3 style={styles.cardTitle}>{it.title}</h3>
+                  <p style={styles.cardDest}>{it.destination}</p>
+                  <p style={styles.cardDates}>
+                    {it.start_date} → {it.end_date}
+                  </p>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
@@ -101,6 +126,15 @@ const styles = {
     color: "#1a1a2e",
     boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
     border: "1px solid #f1f5f9",
+  },
+  cardImage: {
+    width: "100%",
+    height: 160,
+    objectFit: "cover",
+    borderRadius: 10,
+    marginBottom: 12,
+    border: "1px solid #e2e8f0",
+    background: "#f8fafc",
   },
   cardTitle: { fontSize: 18, fontWeight: 600, margin: "0 0 8px 0" },
   cardDest: { fontSize: 14, color: "#64748b", margin: "0 0 4px 0" },

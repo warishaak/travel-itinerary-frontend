@@ -19,6 +19,19 @@ export default function PublicTrips() {
       .finally(() => setLoading(false));
   }, []);
 
+  function getPreviewImage(trip) {
+    if (Array.isArray(trip.images) && trip.images.length > 0) {
+      return trip.images[0];
+    }
+    if (typeof trip.image === "string" && trip.image) {
+      return trip.image;
+    }
+    if (typeof trip.image_url === "string" && trip.image_url) {
+      return trip.image_url;
+    }
+    return "";
+  }
+
   return (
     <div style={styles.container}>
       <Navbar>
@@ -75,22 +88,36 @@ export default function PublicTrips() {
           </div>
         ) : (
           <div style={styles.grid}>
-            {trips.map((trip) => (
-              <div key={trip.id} style={styles.card}>
-                <div style={styles.publicBadge}>Public</div>
-                <h3 style={styles.cardTitle}>{trip.title}</h3>
-                <p style={styles.cardDest}>{trip.destination}</p>
-                <p style={styles.cardDates}>
-                  {trip.start_date} → {trip.end_date}
-                </p>
-                {trip.activities && trip.activities.length > 0 && (
-                  <p style={styles.cardActivities}>
-                    {trip.activities.length}{" "}
-                    {trip.activities.length === 1 ? "activity" : "activities"}
+            {trips.map((trip) => {
+              const previewImage = getPreviewImage(trip);
+
+              return (
+                <div key={trip.id} style={styles.card}>
+                  <div style={styles.publicBadge}>Public</div>
+                  {previewImage && (
+                    <img
+                      src={previewImage}
+                      alt={`${trip.title} preview`}
+                      style={styles.cardImage}
+                      loading="lazy"
+                    />
+                  )}
+                  <h3 style={styles.cardTitle}>{trip.title}</h3>
+                  <p style={styles.cardDest}>{trip.destination}</p>
+                  <p style={styles.cardDates}>
+                    {trip.start_date} → {trip.end_date}
                   </p>
-                )}
-              </div>
-            ))}
+                  {trip.activities && trip.activities.length > 0 && (
+                    <p style={styles.cardActivities}>
+                      {trip.activities.length}{" "}
+                      {trip.activities.length === 1
+                        ? "activity"
+                        : "activities"}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -130,6 +157,15 @@ const styles = {
     border: "1px solid #f1f5f9",
     transition: "transform 0.2s, box-shadow 0.2s",
     cursor: "default",
+  },
+  cardImage: {
+    width: "100%",
+    height: 170,
+    objectFit: "cover",
+    borderRadius: 10,
+    marginBottom: 12,
+    border: "1px solid #e2e8f0",
+    background: "#f8fafc",
   },
   publicBadge: {
     position: "absolute",

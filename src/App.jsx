@@ -35,19 +35,20 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path="/" element={<PublicTrips />} />
+      <Route path="/explore" element={<PublicTrips />} />
       <Route
         path="/login"
-        element={user ? <Navigate to="/" replace /> : <Login />}
+        element={user ? <Navigate to="/my-trips" replace /> : <Login />}
       />
       <Route
         path="/register"
-        element={user ? <Navigate to="/" replace /> : <Register />}
+        element={user ? <Navigate to="/my-trips" replace /> : <Register />}
       />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
-      <Route path="/explore" element={<PublicTrips />} />
       <Route
-        path="/"
+        path="/my-trips"
         element={
           <ProtectedRoute>
             <Home />

@@ -343,7 +343,7 @@ export default function ItineraryDetail() {
 
           <div className="detail-actions">
             <button
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/itineraries")}
               className="detail-done-btn"
             >
               Done

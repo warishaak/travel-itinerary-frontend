@@ -160,6 +160,12 @@ export const api = {
         body: JSON.stringify(data),
       });
     },
+    updateStatus: async (id, status) => {
+      return request(`/api/itineraries/my/${id}/update_status/`, {
+        method: "POST",
+        body: JSON.stringify({ status }),
+      });
+    },
     delete: async (id) => {
       return request(`/api/itineraries/my/${id}/`, {
         method: "DELETE",

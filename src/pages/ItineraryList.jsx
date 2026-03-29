@@ -32,6 +32,24 @@ export default function ItineraryList() {
     return "";
   }
 
+  function getStatusColor(status) {
+    const colors = {
+      planning: "#3b82f6", 
+      ongoing: "#10b981", 
+      completed: "#6b7280", 
+    };
+    return colors[status] || colors.planning;
+  }
+
+  function getStatusLabel(status) {
+    const labels = {
+      planning: "Planning",
+      ongoing: "Ongoing",
+      completed: "Completed",
+    };
+    return labels[status] || status;
+  }
+
   return (
     <div style={styles.container}>
       <Navbar user={user}>
@@ -82,7 +100,26 @@ export default function ItineraryList() {
                       loading="lazy"
                     />
                   )}
-                  <h3 style={styles.cardTitle}>{it.title}</h3>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                    <h3 style={styles.cardTitle}>{it.title}</h3>
+                    {it.status && (
+                      <span
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: "4px",
+                          backgroundColor: getStatusColor(it.status),
+                          color: "white",
+                          fontSize: "11px",
+                          fontWeight: "600",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {getStatusLabel(it.status)}
+                      </span>
+                    )}
+                  </div>
                   <p style={styles.cardDest}>{it.destination}</p>
                   <p style={styles.cardDates}>
                     {it.start_date} → {it.end_date}

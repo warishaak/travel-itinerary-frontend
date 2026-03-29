@@ -24,6 +24,7 @@ export default function ItineraryDetail() {
     description: "",
     day_number: "",
   });
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
     api.itineraries
@@ -123,6 +124,39 @@ export default function ItineraryDetail() {
     });
   }
 
+  async function handleStatusChange(newStatus) {
+    if (newStatus === itinerary.status) return;
+
+    setUpdatingStatus(true);
+    setError("");
+    try {
+      const updated = await api.itineraries.updateStatus(id, newStatus);
+      setItinerary(updated);
+    } catch (err) {
+      setError(err.message || "Failed to update status");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  }
+
+  function getStatusColor(status) {
+    const colors = {
+      planning: "#3b82f6", // blue
+      ongoing: "#10b981", // green
+      completed: "#6b7280", // gray
+    };
+    return colors[status] || colors.planning;
+  }
+
+  function getStatusLabel(status) {
+    const labels = {
+      planning: "Planning",
+      ongoing: "Ongoing",
+      completed: "Completed",
+    };
+    return labels[status] || status;
+  }
+
   const activities = itinerary?.activities || [];
 
   if (loading)
@@ -162,14 +196,67 @@ export default function ItineraryDetail() {
       </Navbar>
       <div className="detail-content">
         <div className="detail-card">
-          <h1 className="detail-title">{itinerary.title}</h1>
-          <p className="detail-dest">
-            <strong>Destination:</strong> {itinerary.destination}
-          </p>
-          <p className="detail-dates">
-            <strong>Dates:</strong> {itinerary.start_date} to{" "}
-            {itinerary.end_date}
-          </p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+            <div>
+              <h1 className="detail-title">{itinerary.title}</h1>
+              <p className="detail-dest">
+                <strong>Destination:</strong> {itinerary.destination}
+              </p>
+              <p className="detail-dates">
+                <strong>Dates:</strong> {itinerary.start_date} to{" "}
+                {itinerary.end_date}
+              </p>
+            </div>
+
+            {/* Status Badge and Selector */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem" }}>
+              <div
+                style={{
+                  padding: "0.5rem 1rem",
+                  borderRadius: "6px",
+                  backgroundColor: getStatusColor(itinerary.status),
+                  color: "white",
+                  fontWeight: "600",
+                  fontSize: "0.875rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                {getStatusLabel(itinerary.status)}
+              </div>
+
+              {itinerary.suggested_status && itinerary.suggested_status !== itinerary.status && (
+                <div style={{ fontSize: "0.75rem", color: "#64748b", textAlign: "right" }}>
+                  Suggested: {getStatusLabel(itinerary.suggested_status)}
+                </div>
+              )}
+
+              <select
+                value={itinerary.status}
+                onChange={(e) => handleStatusChange(e.target.value)}
+                disabled={updatingStatus || itinerary.status === "completed"}
+                style={{
+                  padding: "0.5rem",
+                  borderRadius: "6px",
+                  border: "1px solid #cbd5e1",
+                  fontSize: "0.875rem",
+                  backgroundColor: "white",
+                  cursor: itinerary.status === "completed" ? "not-allowed" : "pointer",
+                  opacity: itinerary.status === "completed" ? 0.6 : 1,
+                }}
+              >
+                <option value="planning">Planning</option>
+                <option value="ongoing">Ongoing</option>
+                <option value="completed">Completed</option>
+              </select>
+
+              {itinerary.status === "completed" && (
+                <div style={{ fontSize: "0.75rem", color: "#6b7280", textAlign: "right" }}>
+                  Completed trips cannot be changed
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Trip Images */}
           {itinerary.images && itinerary.images.length > 0 && (

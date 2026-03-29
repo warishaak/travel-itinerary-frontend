@@ -13,6 +13,7 @@ import ItineraryForm from "./pages/ItineraryForm.jsx";
 import ItineraryDetail from "./pages/ItineraryDetail.jsx";
 import Profile from "./pages/Profile.jsx";
 import PublicTrips from "./pages/PublicTrips.jsx";
+import PublicItineraryDetail from "./pages/PublicItineraryDetail.jsx";
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -37,6 +38,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<PublicTrips />} />
       <Route path="/explore" element={<PublicTrips />} />
+      <Route path="/explore/:id" element={<PublicItineraryDetail />} />
       <Route
         path="/login"
         element={user ? <Navigate to="/my-trips" replace /> : <Login />}

@@ -92,7 +92,11 @@ export default function PublicTrips() {
               const previewImage = getPreviewImage(trip);
 
               return (
-                <div key={trip.id} style={styles.card}>
+                <Link
+                  key={trip.id}
+                  to={`/explore/${trip.id}`}
+                  style={styles.card}
+                >
                   <div style={styles.publicBadge}>Public</div>
                   {previewImage && (
                     <img
@@ -115,7 +119,7 @@ export default function PublicTrips() {
                         : "activities"}
                     </p>
                   )}
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -150,13 +154,16 @@ const styles = {
   },
   card: {
     position: "relative",
+    display: "block",
     padding: 24,
     background: "#fff",
     borderRadius: 12,
     boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
     border: "1px solid #f1f5f9",
     transition: "transform 0.2s, box-shadow 0.2s",
-    cursor: "default",
+    cursor: "pointer",
+    textDecoration: "none",
+    color: "inherit",
   },
   cardImage: {
     width: "100%",

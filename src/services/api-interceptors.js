@@ -13,15 +13,7 @@ export const requestInterceptor = (url, options) => {
   }
 
   // Add timestamp to requests for debugging
-  const modifiedOptions = {
-    ...options,
-    headers: {
-      ...options.headers,
-      'X-Request-ID': `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    },
-  };
-
-  return { url, options: modifiedOptions };
+  return { url, options };
 };
 
 /**

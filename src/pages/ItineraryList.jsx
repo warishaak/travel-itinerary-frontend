@@ -1,58 +1,22 @@
-import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
-import Navbar from "../components/Navbar.jsx";
-import { navStyles } from "../components/navStyles";
+import { useAsyncData } from "../hooks/useAsyncData";
+import { getPreviewImage, formatDateRange } from "../utils/itinerary";
+import { LoadingState, ErrorState, StatusBadge } from "../components";
+import Navbar, { navStyles } from "../components/Navbar.jsx";
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS, SHADOWS } from "../constants/theme";
 
 export default function ItineraryList() {
-  const [itineraries, setItineraries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const { logout, user } = useAuth();
-
-  useEffect(() => {
-    api.itineraries
-      .list()
-      .then(setItineraries)
-      .catch((err) => setError(err.detail || "Failed to load itineraries"))
-      .finally(() => setLoading(false));
-  }, []);
-
-  function getPreviewImage(itinerary) {
-    if (Array.isArray(itinerary.images) && itinerary.images.length > 0) {
-      return itinerary.images[0];
-    }
-    if (typeof itinerary.image === "string" && itinerary.image) {
-      return itinerary.image;
-    }
-    if (typeof itinerary.image_url === "string" && itinerary.image_url) {
-      return itinerary.image_url;
-    }
-    return "";
-  }
-
-  function getStatusColor(status) {
-    const colors = {
-      planning: "#3b82f6", 
-      ongoing: "#10b981", 
-      completed: "#6b7280", 
-    };
-    return colors[status] || colors.planning;
-  }
-
-  function getStatusLabel(status) {
-    const labels = {
-      planning: "Planning",
-      ongoing: "Ongoing",
-      completed: "Completed",
-    };
-    return labels[status] || status;
-  }
+  const { logout } = useAuth();
+  const { data: itineraries, loading, error, refetch } = useAsyncData(
+    () => api.itineraries.list(),
+    []
+  );
 
   return (
     <div style={styles.container}>
-      <Navbar user={user}>
+      <Navbar>
         <Link to="/itineraries" style={navStyles.navLink}>
           My Trips
         </Link>
@@ -69,12 +33,15 @@ export default function ItineraryList() {
           Logout
         </button>
       </Navbar>
+
       <div style={styles.content}>
         <h1 style={styles.title}>My Itineraries</h1>
-        {error && <p style={styles.error}>{error}</p>}
+
         {loading ? (
-          <p style={styles.loading}>Loading...</p>
-        ) : itineraries.length === 0 ? (
+          <LoadingState message="Loading your itineraries..." />
+        ) : error ? (
+          <ErrorState error={error} onRetry={refetch} />
+        ) : !itineraries || itineraries.length === 0 ? (
           <div style={styles.empty}>
             <p style={styles.emptyText}>No itineraries yet.</p>
             <Link to="/itineraries/new" style={styles.emptyLink}>
@@ -85,6 +52,7 @@ export default function ItineraryList() {
           <div style={styles.grid}>
             {itineraries.map((it) => {
               const previewImage = getPreviewImage(it);
+              const dateRange = formatDateRange(it.start_date, it.end_date);
 
               return (
                 <Link
@@ -95,35 +63,18 @@ export default function ItineraryList() {
                   {previewImage && (
                     <img
                       src={previewImage}
-                      alt={`${it.title} preview`}
+                      alt={it.title}
                       style={styles.cardImage}
-                      loading="lazy"
                     />
                   )}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                    <h3 style={styles.cardTitle}>{it.title}</h3>
-                    {it.status && (
-                      <span
-                        style={{
-                          padding: "4px 10px",
-                          borderRadius: "4px",
-                          backgroundColor: getStatusColor(it.status),
-                          color: "white",
-                          fontSize: "11px",
-                          fontWeight: "600",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {getStatusLabel(it.status)}
-                      </span>
-                    )}
+                  <div style={styles.cardContent}>
+                    <div style={styles.cardHeader}>
+                      <h2 style={styles.cardTitle}>{it.title}</h2>
+                      <StatusBadge status={it.status} />
+                    </div>
+                    <p style={styles.cardDestination}>{it.destination}</p>
+                    <p style={styles.cardDates}>{dateRange}</p>
                   </div>
-                  <p style={styles.cardDest}>{it.destination}</p>
-                  <p style={styles.cardDates}>
-                    {it.start_date} → {it.end_date}
-                  </p>
                 </Link>
               );
             })}
@@ -135,45 +86,85 @@ export default function ItineraryList() {
 }
 
 const styles = {
-  container: { minHeight: "100vh" },
-  content: { padding: "2rem", maxWidth: 900, margin: "0 auto" },
-  title: { fontSize: 28, fontWeight: 700, color: "#1a1a2e", marginBottom: 24 },
-  error: { color: "#dc2626", marginBottom: 16 },
-  loading: { color: "#64748b" },
-  empty: {
-    padding: 48,
-    background: "#fff",
-    borderRadius: 12,
-    textAlign: "center",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+  container: {
+    minHeight: "100vh",
+    backgroundColor: COLORS.bgSecondary,
+    paddingBottom: SPACING.xxl,
   },
-  emptyText: { color: "#64748b", marginBottom: 12 },
-  emptyLink: { color: "#0f766e", fontWeight: 600, textDecoration: "none" },
+  content: {
+    maxWidth: "1200px",
+    margin: "0 auto",
+    padding: SPACING.lg,
+  },
+  title: {
+    fontSize: FONT_SIZES.xxxl,
+    fontWeight: FONT_WEIGHTS.bold,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.xl,
+  },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-    gap: 20,
+    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+    gap: SPACING.lg,
   },
   card: {
-    display: "block",
-    padding: 24,
-    background: "#fff",
-    borderRadius: 12,
+    backgroundColor: COLORS.white,
+    borderRadius: BORDER_RADIUS.lg,
+    boxShadow: SHADOWS.base,
+    overflow: "hidden",
     textDecoration: "none",
-    color: "#1a1a2e",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-    border: "1px solid #f1f5f9",
+    transition: "transform 0.2s, box-shadow 0.2s",
+    cursor: "pointer",
   },
   cardImage: {
     width: "100%",
-    height: 160,
+    height: "200px",
     objectFit: "cover",
-    borderRadius: 10,
-    marginBottom: 12,
-    border: "1px solid #e2e8f0",
-    background: "#f8fafc",
   },
-  cardTitle: { fontSize: 18, fontWeight: 600, margin: "0 0 8px 0" },
-  cardDest: { fontSize: 14, color: "#64748b", margin: "0 0 4px 0" },
-  cardDates: { fontSize: 13, color: "#94a3b8", margin: 0 },
+  cardContent: {
+    padding: SPACING.lg,
+  },
+  cardHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: SPACING.sm,
+    gap: SPACING.sm,
+  },
+  cardTitle: {
+    fontSize: FONT_SIZES.xl,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.textPrimary,
+    margin: 0,
+    flex: 1,
+  },
+  cardDestination: {
+    fontSize: FONT_SIZES.base,
+    color: COLORS.textSecondary,
+    margin: `${SPACING.xs} 0`,
+  },
+  cardDates: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textLight,
+    margin: 0,
+  },
+  empty: {
+    textAlign: "center",
+    padding: SPACING.xxl,
+  },
+  emptyText: {
+    fontSize: FONT_SIZES.lg,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.md,
+  },
+  emptyLink: {
+    display: "inline-block",
+    padding: `${SPACING.md} ${SPACING.xl}`,
+    fontSize: FONT_SIZES.base,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.white,
+    backgroundColor: COLORS.primary,
+    borderRadius: BORDER_RADIUS.md,
+    textDecoration: "none",
+  },
 };

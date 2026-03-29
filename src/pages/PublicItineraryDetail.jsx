@@ -1,75 +1,65 @@
-import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
-import { api } from "../services/api";
+import { useAsyncData } from "../hooks/useAsyncData";
+import { formatDateRange } from "../utils/itinerary";
+import { LoadingState, ErrorState } from "../components";
 import Navbar from "../components/Navbar.jsx";
-import { navStyles } from "../components/navStyles";
+import { navStyles } from "../components/Navbar";
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS, SHADOWS } from "../constants/theme";
 
 export default function PublicItineraryDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  const [itinerary, setItinerary] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  useEffect(() => {
-    // Fetch from public API endpoint
-    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/itineraries/public/${id}/`)
-      .then(async (response) => {
-        if (!response.ok) {
-          if (response.status === 404) {
-            navigate("/explore", { replace: true });
-            return;
-          }
-          throw new Error("Failed to load itinerary");
+  const { data: itinerary, loading, error } = useAsyncData(
+    async () => {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/itineraries/public/${id}/`
+      );
+      if (!response.ok) {
+        if (response.status === 404) {
+          navigate("/explore", { replace: true });
+          return null;
         }
-        return response.json();
-      })
-      .then((data) => {
-        if (data) {
-          setItinerary(data);
-        }
-      })
-      .catch((err) => {
-        setError(err.message || "Failed to load itinerary");
-      })
-      .finally(() => setLoading(false));
-  }, [id, navigate]);
+        throw new Error("Failed to load itinerary");
+      }
+      return response.json();
+    },
+    [id]
+  );
 
   const activities = itinerary?.activities || [];
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="detail-container">
-        <Navbar user={user}>
+      <div style={styles.container}>
+        <Navbar>
           <Link to="/explore" style={navStyles.navLink}>
             ← Back to Explore
           </Link>
         </Navbar>
-        <div className="detail-content">
-          <p className="detail-loading">Loading...</p>
-        </div>
+        <LoadingState message="Loading public itinerary..." />
       </div>
     );
+  }
 
-  if (error || !itinerary)
+  if (error || !itinerary) {
     return (
-      <div className="detail-container">
-        <Navbar user={user}>
+      <div style={styles.container}>
+        <Navbar>
           <Link to="/explore" style={navStyles.navLink}>
             ← Back to Explore
           </Link>
         </Navbar>
-        <div className="detail-content">
-          <p className="detail-error">{error || "Itinerary not found"}</p>
-        </div>
+        <ErrorState error={error || "Itinerary not found"} />
       </div>
     );
+  }
 
   return (
-    <div className="detail-container">
-      <Navbar user={user}>
+    <div style={styles.container}>
+      <Navbar>
         <Link to="/explore" style={navStyles.navLink}>
           ← Back to Explore
         </Link>
@@ -77,6 +67,9 @@ export default function PublicItineraryDetail() {
           <>
             <Link to="/itineraries" style={navStyles.navLink}>
               My Trips
+            </Link>
+            <Link to="/profile" style={navStyles.navLink}>
+              Profile
             </Link>
             <button onClick={logout} style={navStyles.logoutBtn}>
               Logout
@@ -93,134 +86,240 @@ export default function PublicItineraryDetail() {
           </>
         )}
       </Navbar>
-      <div className="detail-content">
-        <div className="detail-card">
-          <div style={styles.publicBadge}>Public Trip</div>
-          <h1 className="detail-title">{itinerary.title}</h1>
-          <p className="detail-dest">
-            <strong>Destination:</strong> {itinerary.destination}
-          </p>
-          <p className="detail-dates">
-            <strong>Dates:</strong> {itinerary.start_date} to{" "}
-            {itinerary.end_date}
-          </p>
 
-          {/* Trip Images */}
-          {itinerary.images && itinerary.images.length > 0 && (
-            <div className="detail-images-section">
-              <h3 className="detail-section-title">Trip Photos</h3>
-              <div className="detail-images-grid">
-                {itinerary.images.map((url, index) => (
-                  <img
-                    key={index}
-                    src={url}
-                    alt={`Trip ${index + 1}`}
-                    className="detail-image"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Activities */}
-          <div className="detail-section">
-            <h3 className="detail-section-title">Things to do</h3>
-            {activities.length === 0 ? (
-              <p className="detail-empty-items">No activities listed yet.</p>
-            ) : (
-              <ul className="detail-item-list">
-                {activities.map((item, i) => (
-                  <li key={i} className="detail-item" style={styles.readOnlyItem}>
-                    <div>
-                      <strong>
-                        {typeof item === "object" ? item.title : item}
-                      </strong>
-                      {typeof item === "object" && item.day_number && (
-                        <span className="detail-day-badge">
-                          Day {item.day_number}
-                        </span>
-                      )}
-                      {typeof item === "object" && item.description && (
-                        <p className="detail-item-desc">{item.description}</p>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
+      <div style={styles.content}>
+        <div style={styles.header}>
+          <div>
+            <div style={styles.publicBadge}>Public Trip</div>
+            <h1 style={styles.title}>{itinerary.title}</h1>
+            <p style={styles.destination}>{itinerary.destination}</p>
+            <p style={styles.dates}>{formatDateRange(itinerary.start_date, itinerary.end_date)}</p>
+            {itinerary.user && (
+              <p style={styles.author}>
+                Created by: {itinerary.user.first_name || itinerary.user.email}
+              </p>
             )}
           </div>
+        </div>
 
-          {/* CTA for non-authenticated users */}
-          {!user && (
-            <div style={styles.ctaSection}>
-              <p style={styles.ctaText}>
-                Want to create your own travel itinerary?
-              </p>
-              <div style={styles.ctaButtons}>
-                <Link to="/register" style={styles.ctaButton}>
-                  Sign up free
-                </Link>
-                <Link to="/login" style={styles.ctaButtonSecondary}>
-                  Login
-                </Link>
-              </div>
+        {/* Images */}
+        {itinerary.images && itinerary.images.length > 0 && (
+          <div style={styles.imagesSection}>
+            <h2 style={styles.sectionTitle}>Photos</h2>
+            <div style={styles.imagesGrid}>
+              {itinerary.images.map((img, idx) => (
+                <img key={idx} src={img} alt={`Photo ${idx + 1}`} style={styles.image} />
+              ))}
             </div>
+          </div>
+        )}
+
+        {/* Activities */}
+        <div style={styles.activitiesSection}>
+          <h2 style={styles.sectionTitle}>Activities</h2>
+          {activities.length > 0 ? (
+            <div style={styles.activitiesList}>
+              {activities.map((item, index) => {
+                const activity = typeof item === "object" ? item : { title: String(item) };
+                return (
+                  <div key={index} style={styles.activityCard}>
+                    <div style={styles.activityHeader}>
+                      {activity.day_number && (
+                        <span style={styles.dayBadge}>Day {activity.day_number}</span>
+                      )}
+                      <h3 style={styles.activityTitle}>{activity.title}</h3>
+                    </div>
+                    {activity.description && (
+                      <p style={styles.activityDescription}>{activity.description}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p style={styles.noActivities}>No activities listed for this trip.</p>
           )}
         </div>
+
+        {!user && (
+          <div style={styles.ctaSection}>
+            <p style={styles.ctaText}>Want to create your own travel itinerary?</p>
+            <div style={styles.ctaButtons}>
+              <Link to="/register" style={styles.ctaButton}>
+                Sign Up Free
+              </Link>
+              <Link to="/login" style={styles.ctaButtonSecondary}>
+                Login
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 const styles = {
+  container: {
+    minHeight: "100vh",
+    backgroundColor: COLORS.bgSecondary,
+    paddingBottom: SPACING.xxl,
+  },
+  content: {
+    maxWidth: "900px",
+    margin: "0 auto",
+    padding: SPACING.lg,
+  },
+  header: {
+    backgroundColor: COLORS.white,
+    padding: SPACING.xxl,
+    borderRadius: BORDER_RADIUS.lg,
+    boxShadow: SHADOWS.base,
+    marginBottom: SPACING.lg,
+  },
   publicBadge: {
     display: "inline-block",
-    padding: "6px 14px",
-    background: "#d1fae5",
-    color: "#065f46",
-    borderRadius: 8,
-    fontSize: 13,
-    fontWeight: 600,
-    marginBottom: 16,
+    padding: `${SPACING.xs} ${SPACING.md}`,
+    backgroundColor: COLORS.primary,
+    color: COLORS.white,
+    borderRadius: BORDER_RADIUS.full,
+    fontSize: FONT_SIZES.xs,
+    fontWeight: FONT_WEIGHTS.semibold,
+    marginBottom: SPACING.md,
   },
-  readOnlyItem: {
-    cursor: "default",
+  title: {
+    fontSize: FONT_SIZES.xxxl,
+    fontWeight: FONT_WEIGHTS.bold,
+    color: COLORS.textPrimary,
+    margin: 0,
+  },
+  destination: {
+    fontSize: FONT_SIZES.xl,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.sm,
+  },
+  dates: {
+    fontSize: FONT_SIZES.base,
+    color: COLORS.textLight,
+    marginTop: SPACING.xs,
+  },
+  author: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textSecondary,
+    fontStyle: "italic",
+    marginTop: SPACING.md,
+  },
+  imagesSection: {
+    backgroundColor: COLORS.white,
+    padding: SPACING.xl,
+    borderRadius: BORDER_RADIUS.lg,
+    boxShadow: SHADOWS.base,
+    marginBottom: SPACING.lg,
+  },
+  imagesGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+    gap: SPACING.md,
+    marginTop: SPACING.md,
+  },
+  image: {
+    width: "100%",
+    height: "150px",
+    objectFit: "cover",
+    borderRadius: BORDER_RADIUS.md,
+  },
+  activitiesSection: {
+    backgroundColor: COLORS.white,
+    padding: SPACING.xl,
+    borderRadius: BORDER_RADIUS.lg,
+    boxShadow: SHADOWS.base,
+    marginBottom: SPACING.lg,
+  },
+  sectionTitle: {
+    fontSize: FONT_SIZES.xxl,
+    fontWeight: FONT_WEIGHTS.bold,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.lg,
+  },
+  activitiesList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: SPACING.md,
+  },
+  activityCard: {
+    padding: SPACING.lg,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: COLORS.bgSecondary,
+  },
+  activityHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  dayBadge: {
+    padding: `${SPACING.xs} ${SPACING.sm}`,
+    backgroundColor: COLORS.primary,
+    color: COLORS.white,
+    borderRadius: BORDER_RADIUS.full,
+    fontSize: FONT_SIZES.xs,
+    fontWeight: FONT_WEIGHTS.semibold,
+  },
+  activityTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.textPrimary,
+    margin: 0,
+  },
+  activityDescription: {
+    fontSize: FONT_SIZES.base,
+    color: COLORS.textSecondary,
+    margin: 0,
+  },
+  noActivities: {
+    textAlign: "center",
+    color: COLORS.textSecondary,
+    padding: SPACING.xl,
+    fontSize: FONT_SIZES.base,
   },
   ctaSection: {
-    marginTop: 48,
-    padding: 32,
-    background: "#f8fafc",
-    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    color: COLORS.white,
+    padding: SPACING.xxl,
+    borderRadius: BORDER_RADIUS.lg,
     textAlign: "center",
   },
   ctaText: {
-    fontSize: 18,
-    fontWeight: 600,
-    color: "#1a1a2e",
-    marginBottom: 20,
+    fontSize: FONT_SIZES.xl,
+    fontWeight: FONT_WEIGHTS.semibold,
+    marginBottom: SPACING.lg,
   },
   ctaButtons: {
     display: "flex",
-    gap: 16,
+    gap: SPACING.md,
     justifyContent: "center",
   },
   ctaButton: {
-    padding: "12px 28px",
-    background: "#0f766e",
-    color: "white",
-    borderRadius: 10,
+    padding: `${SPACING.md} ${SPACING.xl}`,
+    fontSize: FONT_SIZES.base,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.primary,
+    backgroundColor: COLORS.white,
+    border: "none",
+    borderRadius: BORDER_RADIUS.md,
     textDecoration: "none",
-    fontSize: 16,
-    fontWeight: 600,
+    cursor: "pointer",
   },
   ctaButtonSecondary: {
-    padding: "12px 28px",
-    background: "white",
-    color: "#0f766e",
-    border: "1px solid #0f766e",
-    borderRadius: 10,
+    padding: `${SPACING.md} ${SPACING.xl}`,
+    fontSize: FONT_SIZES.base,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.white,
+    backgroundColor: "transparent",
+    border: `2px solid ${COLORS.white}`,
+    borderRadius: BORDER_RADIUS.md,
     textDecoration: "none",
-    fontSize: 16,
-    fontWeight: 600,
+    cursor: "pointer",
   },
 };

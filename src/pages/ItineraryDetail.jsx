@@ -1,56 +1,47 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
+import { useAsyncData } from "../hooks/useAsyncData";
+import { formatDateRange } from "../utils/itinerary";
+import { parseApiError } from "../utils/apiErrors";
+import { LoadingState, ErrorState, StatusBadge } from "../components";
 import Navbar from "../components/Navbar.jsx";
+import { navStyles } from "../components/Navbar";
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS, SHADOWS } from "../constants/theme";
 
 export default function ItineraryDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
-  const [itinerary, setItinerary] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [deleting, setDeleting] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [newItem, setNewItem] = useState({
-    title: "",
-    description: "",
-    day_number: "",
-  });
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editForm, setEditForm] = useState({
-    title: "",
-    description: "",
-    day_number: "",
-  });
-  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const { logout } = useAuth();
 
-  useEffect(() => {
-    api.itineraries
-      .get(id)
-      .then(setItinerary)
-      .catch((err) => {
+  const { data: itinerary, loading, error, setData, setError } = useAsyncData(
+    () => api.itineraries.get(id),
+    [id],
+    {
+      onError: (err) => {
         if (err?.status === 404) {
           navigate("/itineraries", { replace: true });
-          return;
         }
-        setError(err?.detail || "Failed to load itinerary");
-      })
-      .finally(() => setLoading(false));
-  }, [id, navigate]);
+      },
+    }
+  );
+
+  const [deleting, setDeleting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [newItem, setNewItem] = useState({ title: "", description: "", day_number: "" });
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [editForm, setEditForm] = useState({ title: "", description: "", day_number: "" });
 
   async function saveActivities(activities) {
     setSaving(true);
-    setError("");
+    setError(null);
     try {
-      const updated = await api.itineraries.update(id, {
-        ...itinerary,
-        activities,
-      });
-      setItinerary(updated);
+      const updated = await api.itineraries.update(id, { ...itinerary, activities });
+      setData(updated);
     } catch (err) {
-      setError(err.message || "Failed to save");
+      setError(parseApiError(err, "Failed to save activities"));
     } finally {
       setSaving(false);
     }
@@ -68,43 +59,55 @@ export default function ItineraryDetail() {
         navigate("/itineraries", { replace: true });
         return;
       }
-      setError(message || "Failed to delete itinerary");
+      setError(parseApiError(err, "Failed to delete itinerary"));
     } finally {
       setDeleting(false);
+    }
+  }
+
+  async function handleStatusChange(newStatus) {
+    setUpdatingStatus(true);
+    try {
+      await api.itineraries.updateStatus(id, newStatus);
+      setData({ ...itinerary, status: newStatus });
+    } catch (err) {
+      setError(parseApiError(err, "Failed to update status"));
+    } finally {
+      setUpdatingStatus(false);
     }
   }
 
   function handleAddItem(e) {
     e.preventDefault();
     if (!newItem.title.trim()) return;
+
     const activities = [...(itinerary.activities || [])];
     activities.push({
       title: newItem.title.trim(),
       description: (newItem.description || "").trim() || undefined,
-      day_number: newItem.day_number
-        ? parseInt(newItem.day_number, 10)
-        : undefined,
+      day_number: newItem.day_number ? parseInt(newItem.day_number, 10) : undefined,
     });
+
     setNewItem({ title: "", description: "", day_number: "" });
     saveActivities(activities);
   }
 
   function handleUpdateItem() {
     if (!editForm.title.trim()) return;
+
     const activities = [...(itinerary.activities || [])];
     activities[editingIndex] = {
       title: editForm.title.trim(),
       description: (editForm.description || "").trim() || undefined,
-      day_number: editForm.day_number
-        ? parseInt(editForm.day_number, 10)
-        : undefined,
+      day_number: editForm.day_number ? parseInt(editForm.day_number, 10) : undefined,
     };
+
     setEditingIndex(null);
     saveActivities(activities);
   }
 
   function handleDeleteItem(index) {
-    if (!window.confirm("Remove this item?")) return;
+    if (!window.confirm("Remove this activity?")) return;
     const activities = [...(itinerary.activities || [])];
     activities.splice(index, 1);
     saveActivities(activities);
@@ -112,342 +115,434 @@ export default function ItineraryDetail() {
 
   function startEdit(index) {
     const item = itinerary.activities[index];
-    const a =
-      typeof item === "object"
-        ? item
-        : { title: String(item), description: "", day_number: "" };
+    const activity = typeof item === "object" ? item : { title: String(item), description: "", day_number: "" };
     setEditingIndex(index);
     setEditForm({
-      title: a.title || "",
-      description: a.description || "",
-      day_number: a.day_number ? String(a.day_number) : "",
+      title: activity.title || "",
+      description: activity.description || "",
+      day_number: activity.day_number ? String(activity.day_number) : "",
     });
   }
 
-  async function handleStatusChange(newStatus) {
-    if (newStatus === itinerary.status) return;
-
-    setUpdatingStatus(true);
-    setError("");
-    try {
-      const updated = await api.itineraries.updateStatus(id, newStatus);
-      setItinerary(updated);
-    } catch (err) {
-      setError(err.message || "Failed to update status");
-    } finally {
-      setUpdatingStatus(false);
-    }
-  }
-
-  function getStatusColor(status) {
-    const colors = {
-      planning: "#3b82f6", // blue
-      ongoing: "#10b981", // green
-      completed: "#6b7280", // gray
-    };
-    return colors[status] || colors.planning;
-  }
-
-  function getStatusLabel(status) {
-    const labels = {
-      planning: "Planning",
-      ongoing: "Ongoing",
-      completed: "Completed",
-    };
-    return labels[status] || status;
-  }
-
-  const activities = itinerary?.activities || [];
-
-  if (loading)
-    return (
-      <div className="detail-container">
-        <Navbar user={user}>
-          <div />
-        </Navbar>
-        <div className="detail-content">
-          <p className="detail-loading">Loading...</p>
-        </div>
-      </div>
-    );
-  if (error && !itinerary)
-    return (
-      <div className="detail-container">
-        <Navbar user={user}>
-          <Link to="/itineraries" className="navbar-link">
-            ← Back
-          </Link>
-        </Navbar>
-        <div className="detail-content">
-          <p className="detail-error">{error}</p>
-        </div>
-      </div>
-    );
+  if (loading) return <LoadingState message="Loading itinerary..." />;
+  if (error && !itinerary) return <ErrorState error={error} />;
 
   return (
-    <div className="detail-container">
-      <Navbar user={user}>
-        <Link to="/itineraries" className="navbar-link">
+    <div style={styles.container}>
+      <Navbar>
+        <Link to="/itineraries" style={navStyles.navLink}>
           ← Back
         </Link>
-        <button onClick={logout} className="navbar-logout-btn">
+        <button onClick={logout} style={navStyles.logoutBtn}>
           Logout
         </button>
       </Navbar>
-      <div className="detail-content">
-        <div className="detail-card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
-            <div>
-              <h1 className="detail-title">{itinerary.title}</h1>
-              <p className="detail-dest">
-                <strong>Destination:</strong> {itinerary.destination}
-              </p>
-              <p className="detail-dates">
-                <strong>Dates:</strong> {itinerary.start_date} to{" "}
-                {itinerary.end_date}
-              </p>
-            </div>
 
-            {/* Status Badge and Selector */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem" }}>
-              <div
-                style={{
-                  padding: "0.5rem 1rem",
-                  borderRadius: "6px",
-                  backgroundColor: getStatusColor(itinerary.status),
-                  color: "white",
-                  fontWeight: "600",
-                  fontSize: "0.875rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                }}
-              >
-                {getStatusLabel(itinerary.status)}
-              </div>
+      <div style={styles.content}>
+        {error && <div style={styles.errorBanner}>{error}</div>}
 
-              {itinerary.suggested_status && itinerary.suggested_status !== itinerary.status && (
-                <div style={{ fontSize: "0.75rem", color: "#64748b", textAlign: "right" }}>
-                  Suggested: {getStatusLabel(itinerary.suggested_status)}
-                </div>
-              )}
+        <div style={styles.header}>
+          <div>
+            <h1 style={styles.title}>{itinerary?.title}</h1>
+            <p style={styles.destination}>{itinerary?.destination}</p>
+            <p style={styles.dates}>{formatDateRange(itinerary?.start_date, itinerary?.end_date)}</p>
+          </div>
+          <div style={styles.headerActions}>
+            <StatusBadge status={itinerary?.status} />
+          </div>
+        </div>
 
-              <select
-                value={itinerary.status}
-                onChange={(e) => handleStatusChange(e.target.value)}
-                disabled={updatingStatus || itinerary.status === "completed"}
-                style={{
-                  padding: "0.5rem",
-                  borderRadius: "6px",
-                  border: "1px solid #cbd5e1",
-                  fontSize: "0.875rem",
-                  backgroundColor: "white",
-                  cursor: itinerary.status === "completed" ? "not-allowed" : "pointer",
-                  opacity: itinerary.status === "completed" ? 0.6 : 1,
-                }}
-              >
-                <option value="planning">Planning</option>
-                <option value="ongoing">Ongoing</option>
-                <option value="completed">Completed</option>
-              </select>
+        {/* Status Selector */}
+        <div style={styles.statusSection}>
+          <label style={styles.statusLabel}>Status:</label>
+          <select
+            value={itinerary?.status || "planning"}
+            onChange={(e) => handleStatusChange(e.target.value)}
+            disabled={updatingStatus}
+            style={styles.statusSelect}
+          >
+            <option value="planning">Planning</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
 
-              {itinerary.status === "completed" && (
-                <div style={{ fontSize: "0.75rem", color: "#6b7280", textAlign: "right" }}>
-                  Completed trips cannot be changed
-                </div>
-              )}
+        {/* Images */}
+        {itinerary?.images && itinerary.images.length > 0 && (
+          <div style={styles.imagesSection}>
+            <h2 style={styles.sectionTitle}>Photos</h2>
+            <div style={styles.imagesGrid}>
+              {itinerary.images.map((img, idx) => (
+                <img key={idx} src={img} alt={`Photo ${idx + 1}`} style={styles.image} />
+              ))}
             </div>
           </div>
+        )}
 
-          {/* Trip Images */}
-          {itinerary.images && itinerary.images.length > 0 && (
-            <div className="detail-images-section">
-              <h3 className="detail-section-title">Trip Photos</h3>
-              <div className="detail-images-grid">
-                {itinerary.images.map((url, index) => (
-                  <img
-                    key={index}
-                    src={url}
-                    alt={`Trip ${index + 1}`}
-                    className="detail-image"
-                  />
-                ))}
-              </div>
+        {/* Activities */}
+        <div style={styles.activitiesSection}>
+          <h2 style={styles.sectionTitle}>Activities</h2>
+
+          {itinerary?.activities && itinerary.activities.length > 0 ? (
+            <div style={styles.activitiesList}>
+              {itinerary.activities.map((item, index) => {
+                const activity = typeof item === "object" ? item : { title: String(item) };
+
+                if (editingIndex === index) {
+                  return (
+                    <div key={index} style={styles.activityCard}>
+                      <input
+                        type="text"
+                        value={editForm.title}
+                        onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                        style={styles.input}
+                        placeholder="Activity title"
+                      />
+                      <textarea
+                        value={editForm.description}
+                        onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                        style={styles.textarea}
+                        placeholder="Description (optional)"
+                      />
+                      <input
+                        type="number"
+                        value={editForm.day_number}
+                        onChange={(e) => setEditForm({ ...editForm, day_number: e.target.value })}
+                        style={styles.input}
+                        placeholder="Day # (optional)"
+                      />
+                      <div style={styles.activityActions}>
+                        <button onClick={handleUpdateItem} style={styles.saveBtn}>
+                          Save
+                        </button>
+                        <button onClick={() => setEditingIndex(null)} style={styles.cancelBtn}>
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={index} style={styles.activityCard}>
+                    <div style={styles.activityHeader}>
+                      {activity.day_number && <span style={styles.dayBadge}>Day {activity.day_number}</span>}
+                      <h3 style={styles.activityTitle}>{activity.title}</h3>
+                    </div>
+                    {activity.description && <p style={styles.activityDescription}>{activity.description}</p>}
+                    <div style={styles.activityActions}>
+                      <button onClick={() => startEdit(index)} style={styles.editBtn}>
+                        Edit
+                      </button>
+                      <button onClick={() => handleDeleteItem(index)} style={styles.deleteBtn}>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
+          ) : (
+            <p style={styles.noActivities}>No activities yet. Add your first one below!</p>
           )}
 
-          <div className="detail-section">
-            <h3 className="detail-section-title">Things to do</h3>
-            {error && <p className="detail-error">{error}</p>}
-            <form onSubmit={handleAddItem} className="detail-add-form">
-              <input
-                placeholder="Activity name (e.g. Visit Eiffel Tower)"
-                value={newItem.title}
-                onChange={(e) =>
-                  setNewItem((p) => ({ ...p, title: e.target.value }))
-                }
-                className="detail-add-input"
-              />
-              <input
-                placeholder="Description (optional)"
-                value={newItem.description}
-                onChange={(e) =>
-                  setNewItem((p) => ({ ...p, description: e.target.value }))
-                }
-                className="detail-add-input"
-              />
-              <div className="detail-add-row">
-                <div className="detail-day-wrapper">
-                  <label className="detail-label">Day (optional)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    placeholder="—"
-                    value={newItem.day_number}
-                    onChange={(e) =>
-                      setNewItem((p) => ({ ...p, day_number: e.target.value }))
-                    }
-                    className="detail-day-input"
-                    aria-label="Day number optional"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="detail-add-btn"
-                >
-                  {saving ? "Adding..." : "Add activity"}
-                </button>
-              </div>
-            </form>
-
-            {activities.length === 0 ? (
-              <p className="detail-empty-items">
-                No activities yet. Add one above.
-              </p>
-            ) : (
-              <ul className="detail-item-list">
-                {activities.map((item, i) => (
-                  <li key={i} className="detail-item">
-                    {editingIndex === i ? (
-                      <div className="detail-edit-form">
-                        <input
-                          value={editForm.title}
-                          onChange={(e) =>
-                            setEditForm((p) => ({
-                              ...p,
-                              title: e.target.value,
-                            }))
-                          }
-                          className="detail-edit-input"
-                          placeholder="Title"
-                        />
-                        <input
-                          value={editForm.description}
-                          onChange={(e) =>
-                            setEditForm((p) => ({
-                              ...p,
-                              description: e.target.value,
-                            }))
-                          }
-                          placeholder="Description"
-                          className="detail-edit-input"
-                        />
-                        <div className="detail-edit-actions">
-                          <div className="detail-day-wrapper">
-                            <label className="detail-label">
-                              Day (optional)
-                            </label>
-                            <input
-                              type="number"
-                              min="1"
-                              value={editForm.day_number}
-                              onChange={(e) =>
-                                setEditForm((p) => ({
-                                  ...p,
-                                  day_number: e.target.value,
-                                }))
-                              }
-                              placeholder="—"
-                              className="detail-day-input"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={handleUpdateItem}
-                            className="detail-save-btn"
-                          >
-                            Save
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingIndex(null)}
-                            className="detail-cancel-btn"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <div>
-                          <strong>
-                            {typeof item === "object" ? item.title : item}
-                          </strong>
-                          {typeof item === "object" && item.day_number && (
-                            <span className="detail-day-badge">
-                              Day {item.day_number}
-                            </span>
-                          )}
-                          {typeof item === "object" && item.description && (
-                            <p className="detail-item-desc">
-                              {item.description}
-                            </p>
-                          )}
-                        </div>
-                        <div className="detail-item-actions">
-                          <button
-                            type="button"
-                            onClick={() => startEdit(i)}
-                            className="detail-small-btn"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteItem(i)}
-                            className="detail-small-btn-danger"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="detail-actions">
-            <button
-              onClick={() => navigate("/itineraries")}
-              className="detail-done-btn"
-            >
-              Done
+          {/* Add New Activity Form */}
+          <form onSubmit={handleAddItem} style={styles.addForm}>
+            <h3 style={styles.addFormTitle}>Add New Activity</h3>
+            <input
+              type="text"
+              value={newItem.title}
+              onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+              style={styles.input}
+              placeholder="Activity title *"
+            />
+            <textarea
+              value={newItem.description}
+              onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+              style={styles.textarea}
+              placeholder="Description (optional)"
+            />
+            <input
+              type="number"
+              value={newItem.day_number}
+              onChange={(e) => setNewItem({ ...newItem, day_number: e.target.value })}
+              style={styles.input}
+              placeholder="Day # (optional)"
+            />
+            <button type="submit" disabled={saving} style={styles.addBtn}>
+              {saving ? "Adding..." : "Add Activity"}
             </button>
-            <Link to={`/itineraries/${id}/edit`} className="detail-edit-btn">
-              Edit itinerary
-            </Link>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="detail-delete-btn"
-            >
-              {deleting ? "Deleting..." : "Delete itinerary"}
-            </button>
-          </div>
+          </form>
+        </div>
+
+        {/* Action Buttons */}
+        <div style={styles.actions}>
+          <Link to={`/itineraries/${id}/edit`} style={styles.editButton}>
+            Edit Itinerary
+          </Link>
+          <button onClick={handleDelete} disabled={deleting} style={styles.deleteButton}>
+            {deleting ? "Deleting..." : "Delete Itinerary"}
+          </button>
         </div>
       </div>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    minHeight: "100vh",
+    backgroundColor: COLORS.bgSecondary,
+    paddingBottom: SPACING.xxl,
+  },
+  content: {
+    maxWidth: "900px",
+    margin: "0 auto",
+    padding: SPACING.lg,
+  },
+  errorBanner: {
+    backgroundColor: COLORS.bgError,
+    color: COLORS.error,
+    padding: SPACING.md,
+    borderRadius: BORDER_RADIUS.md,
+    marginBottom: SPACING.lg,
+  },
+  header: {
+    backgroundColor: COLORS.white,
+    padding: SPACING.xxl,
+    borderRadius: BORDER_RADIUS.lg,
+    boxShadow: SHADOWS.base,
+    marginBottom: SPACING.lg,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  title: {
+    fontSize: FONT_SIZES.xxxl,
+    fontWeight: FONT_WEIGHTS.bold,
+    color: COLORS.textPrimary,
+    margin: 0,
+  },
+  destination: {
+    fontSize: FONT_SIZES.xl,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.sm,
+  },
+  dates: {
+    fontSize: FONT_SIZES.base,
+    color: COLORS.textLight,
+    marginTop: SPACING.xs,
+  },
+  headerActions: {
+    display: "flex",
+    gap: SPACING.md,
+  },
+  statusSection: {
+    backgroundColor: COLORS.white,
+    padding: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    boxShadow: SHADOWS.base,
+    marginBottom: SPACING.lg,
+    display: "flex",
+    alignItems: "center",
+    gap: SPACING.md,
+  },
+  statusLabel: {
+    fontSize: FONT_SIZES.base,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.textPrimary,
+  },
+  statusSelect: {
+    padding: SPACING.sm,
+    fontSize: FONT_SIZES.base,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: COLORS.white,
+    cursor: "pointer",
+  },
+  imagesSection: {
+    backgroundColor: COLORS.white,
+    padding: SPACING.xl,
+    borderRadius: BORDER_RADIUS.lg,
+    boxShadow: SHADOWS.base,
+    marginBottom: SPACING.lg,
+  },
+  imagesGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+    gap: SPACING.md,
+    marginTop: SPACING.md,
+  },
+  image: {
+    width: "100%",
+    height: "150px",
+    objectFit: "cover",
+    borderRadius: BORDER_RADIUS.md,
+  },
+  activitiesSection: {
+    backgroundColor: COLORS.white,
+    padding: SPACING.xl,
+    borderRadius: BORDER_RADIUS.lg,
+    boxShadow: SHADOWS.base,
+    marginBottom: SPACING.lg,
+  },
+  sectionTitle: {
+    fontSize: FONT_SIZES.xxl,
+    fontWeight: FONT_WEIGHTS.bold,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.lg,
+  },
+  activitiesList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: SPACING.md,
+    marginBottom: SPACING.xl,
+  },
+  activityCard: {
+    padding: SPACING.lg,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: COLORS.bgSecondary,
+  },
+  activityHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  dayBadge: {
+    padding: `${SPACING.xs} ${SPACING.sm}`,
+    backgroundColor: COLORS.primary,
+    color: COLORS.white,
+    borderRadius: BORDER_RADIUS.full,
+    fontSize: FONT_SIZES.xs,
+    fontWeight: FONT_WEIGHTS.semibold,
+  },
+  activityTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.textPrimary,
+    margin: 0,
+  },
+  activityDescription: {
+    fontSize: FONT_SIZES.base,
+    color: COLORS.textSecondary,
+    margin: `${SPACING.sm} 0`,
+  },
+  activityActions: {
+    display: "flex",
+    gap: SPACING.sm,
+    marginTop: SPACING.md,
+  },
+  editBtn: {
+    padding: `${SPACING.xs} ${SPACING.md}`,
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.primary,
+    backgroundColor: COLORS.white,
+    border: `1px solid ${COLORS.primary}`,
+    borderRadius: BORDER_RADIUS.md,
+    cursor: "pointer",
+  },
+  deleteBtn: {
+    padding: `${SPACING.xs} ${SPACING.md}`,
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.error,
+    backgroundColor: COLORS.white,
+    border: `1px solid ${COLORS.error}`,
+    borderRadius: BORDER_RADIUS.md,
+    cursor: "pointer",
+  },
+  saveBtn: {
+    padding: `${SPACING.xs} ${SPACING.md}`,
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.white,
+    backgroundColor: COLORS.success,
+    border: "none",
+    borderRadius: BORDER_RADIUS.md,
+    cursor: "pointer",
+  },
+  cancelBtn: {
+    padding: `${SPACING.xs} ${SPACING.md}`,
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textSecondary,
+    backgroundColor: COLORS.white,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: BORDER_RADIUS.md,
+    cursor: "pointer",
+  },
+  noActivities: {
+    textAlign: "center",
+    color: COLORS.textSecondary,
+    padding: SPACING.xl,
+    fontSize: FONT_SIZES.base,
+  },
+  addForm: {
+    padding: SPACING.lg,
+    backgroundColor: COLORS.bgSecondary,
+    borderRadius: BORDER_RADIUS.md,
+    border: `2px dashed ${COLORS.border}`,
+  },
+  addFormTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.md,
+  },
+  input: {
+    width: "100%",
+    padding: SPACING.md,
+    fontSize: FONT_SIZES.base,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: BORDER_RADIUS.md,
+    marginBottom: SPACING.sm,
+    backgroundColor: COLORS.white,
+  },
+  textarea: {
+    width: "100%",
+    padding: SPACING.md,
+    fontSize: FONT_SIZES.base,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: BORDER_RADIUS.md,
+    marginBottom: SPACING.sm,
+    minHeight: "80px",
+    resize: "vertical",
+    backgroundColor: COLORS.white,
+  },
+  addBtn: {
+    width: "100%",
+    padding: SPACING.md,
+    fontSize: FONT_SIZES.base,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.white,
+    backgroundColor: COLORS.primary,
+    border: "none",
+    borderRadius: BORDER_RADIUS.md,
+    cursor: "pointer",
+  },
+  actions: {
+    display: "flex",
+    gap: SPACING.md,
+    justifyContent: "center",
+  },
+  editButton: {
+    padding: `${SPACING.md} ${SPACING.xl}`,
+    fontSize: FONT_SIZES.base,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.primary,
+    backgroundColor: COLORS.white,
+    border: `2px solid ${COLORS.primary}`,
+    borderRadius: BORDER_RADIUS.md,
+    textDecoration: "none",
+    cursor: "pointer",
+  },
+  deleteButton: {
+    padding: `${SPACING.md} ${SPACING.xl}`,
+    fontSize: FONT_SIZES.base,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.white,
+    backgroundColor: COLORS.error,
+    border: "none",
+    borderRadius: BORDER_RADIUS.md,
+    cursor: "pointer",
+  },
+};

@@ -1,13 +1,12 @@
-import React, { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
+import { useForm } from "../hooks/useForm";
+import { validateEmail, validateRequired } from "../utils/validation";
+import { parseApiError } from "../utils/apiErrors";
+import { authFormStyles } from "../styles/commonStyles";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -15,70 +14,71 @@ export default function Login() {
   // Check if there's a success message from password reset
   const successMessage = location.state?.message;
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    if (!email.trim()) {
-      setError("Email is required.");
-      return;
+  // Use custom form hook - replaces manual state management
+  const { values, errors, handleChange, handleSubmit, isSubmitting, setError } = useForm(
+    { email: "", password: "" },
+    {
+      email: validateEmail,
+      password: (value) => validateRequired(value, "Password"),
+    },
+    async (formValues) => {
+      try {
+        const data = await api.auth.login(formValues.email, formValues.password);
+        login(data.access, data.refresh);
+        navigate("/", { replace: true });
+      } catch (err) {
+        const errorMessage = parseApiError(err, "Login failed. Check your credentials.");
+        setError("email", errorMessage);
+      }
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-    if (!password) {
-      setError("Password is required.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const data = await api.auth.login(email, password);
-      login(data.access, data.refresh);
-      navigate("/", { replace: true });
-    } catch (err) {
-      setError(
-        err.detail || err.email?.[0] || "Login failed. Check your credentials.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
+  );
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Welcome back</h1>
-        <p style={styles.subtitle}>Sign in to manage your itineraries</p>
-        <form onSubmit={handleSubmit} noValidate style={styles.form}>
-          {successMessage && <p style={styles.success}>{successMessage}</p>}
-          {error && <p style={styles.error}>{error}</p>}
+    <div style={authFormStyles.wrapper}>
+      <div style={authFormStyles.card}>
+        <h1 style={authFormStyles.title}>Welcome back</h1>
+        <p style={authFormStyles.subtitle}>Sign in to manage your itineraries</p>
+
+        <form onSubmit={handleSubmit} noValidate style={authFormStyles.form}>
+          {successMessage && <p style={authFormStyles.success}>{successMessage}</p>}
+          {errors.email && <p style={authFormStyles.error}>{errors.email}</p>}
+
           <input
             type="text"
+            name="email"
             inputMode="email"
             autoComplete="email"
             placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={styles.input}
+            value={values.email}
+            onChange={handleChange}
+            style={authFormStyles.input}
           />
+
           <input
             type="password"
+            name="password"
             placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={values.password}
+            onChange={handleChange}
             autoComplete="current-password"
-            style={styles.input}
+            style={authFormStyles.input}
           />
-          <Link to="/forgot-password" style={styles.forgotPassword}>
+
+          <Link
+            to="/forgot-password"
+            style={{ ...authFormStyles.link, textAlign: "right", marginTop: "-8px" }}
+          >
             Forgot password?
           </Link>
-          <button type="submit" disabled={loading} style={styles.button}>
-            {loading ? "Signing in..." : "Sign in"}
+
+          <button type="submit" disabled={isSubmitting} style={authFormStyles.button}>
+            {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
-        <p style={styles.footer}>
+
+        <p style={{ marginTop: "24px", textAlign: "center", color: "#64748b", fontSize: "14px" }}>
           Don&apos;t have an account?{" "}
-          <Link to="/register" style={styles.link}>
+          <Link to="/register" style={authFormStyles.link}>
             Create one
           </Link>
         </p>
@@ -86,69 +86,3 @@ export default function Login() {
     </div>
   );
 }
-
-const styles = {
-  wrapper: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-  },
-  card: {
-    width: "100%",
-    maxWidth: 400,
-    padding: 40,
-    background: "#fff",
-    borderRadius: 16,
-    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 700,
-    color: "#1a1a2e",
-    margin: "0 0 8px 0",
-  },
-  subtitle: { fontSize: 15, color: "#64748b", margin: "0 0 24px 0" },
-  form: { display: "flex", flexDirection: "column", gap: 16 },
-  input: {
-    padding: 14,
-    fontSize: 16,
-    border: "1px solid #e2e8f0",
-    borderRadius: 10,
-  },
-  forgotPassword: {
-    color: "#0f766e",
-    fontSize: 14,
-    textDecoration: "none",
-    textAlign: "right",
-    marginTop: "-8px",
-  },
-  button: {
-    padding: 14,
-    fontSize: 16,
-    fontWeight: 600,
-    cursor: "pointer",
-    background: "#0f766e",
-    color: "white",
-    border: "none",
-    borderRadius: 10,
-    marginTop: 8,
-  },
-  success: {
-    backgroundColor: "#d1fae5",
-    color: "#065f46",
-    padding: 12,
-    borderRadius: 6,
-    margin: 0,
-    fontSize: 14,
-  },
-  error: { color: "#dc2626", margin: 0, fontSize: 14 },
-  footer: {
-    marginTop: 24,
-    textAlign: "center",
-    color: "#64748b",
-    fontSize: 14,
-  },
-  link: { color: "#0f766e", fontWeight: 600, textDecoration: "none" },
-};

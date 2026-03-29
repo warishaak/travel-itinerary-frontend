@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
+import { parseApiError } from "../utils/apiErrors";
 import Navbar from "../components/Navbar.jsx";
-import { navStyles } from "../components/navStyles";
+import { navStyles } from "../components/Navbar";
 import ProfileImageUpload from "../components/ProfileImageUpload.jsx";
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS, SHADOWS } from "../constants/theme";
 
 export default function Profile() {
   const { user, logout, loadUser } = useAuth();
@@ -28,16 +30,17 @@ export default function Profile() {
     setError("");
     setSuccess("");
     setLoading(true);
+
     try {
       await api.auth.updateProfile({
         first_name: firstName,
         last_name: lastName,
         profile_image: profileImage,
       });
-      loadUser();
-      setSuccess("Profile updated.");
+      await loadUser();
+      setSuccess("Profile updated successfully!");
     } catch (err) {
-      setError(err.message || "Failed to update profile.");
+      setError(parseApiError(err, "Failed to update profile."));
     } finally {
       setLoading(false);
     }
@@ -45,7 +48,7 @@ export default function Profile() {
 
   return (
     <div style={styles.container}>
-      <Navbar user={user}>
+      <Navbar>
         <Link to="/itineraries" style={navStyles.navLink}>
           ← Back
         </Link>
@@ -53,31 +56,40 @@ export default function Profile() {
           Logout
         </button>
       </Navbar>
+
       <div style={styles.content}>
         <div style={styles.card}>
           <h1 style={styles.title}>Profile</h1>
           <p style={styles.email}>Email: {user?.email}</p>
+
           {error && <p style={styles.error}>{error}</p>}
           {success && <p style={styles.success}>{success}</p>}
+
           <form onSubmit={handleSubmit} style={styles.form}>
-            <ProfileImageUpload
-              imageUrl={profileImage}
-              onChange={setProfileImage}
-            />
-            <input
-              placeholder="First name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              style={styles.input}
-            />
-            <input
-              placeholder="Last name"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              style={styles.input}
-            />
+            <ProfileImageUpload value={profileImage} onChange={setProfileImage} />
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>First Name</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Last Name</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                style={styles.input}
+              />
+            </div>
+
             <button type="submit" disabled={loading} style={styles.button}>
-              {loading ? "Saving..." : "Save"}
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </form>
         </div>
@@ -87,39 +99,76 @@ export default function Profile() {
 }
 
 const styles = {
-  container: { minHeight: "100vh" },
-  content: { padding: "2rem", maxWidth: 440, margin: "0 auto" },
+  container: {
+    minHeight: "100vh",
+    backgroundColor: COLORS.bgSecondary,
+    paddingBottom: SPACING.xxl,
+  },
+  content: {
+    maxWidth: "600px",
+    margin: "0 auto",
+    padding: SPACING.lg,
+  },
   card: {
-    padding: 32,
-    background: "#fff",
-    borderRadius: 16,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-    border: "1px solid #f1f5f9",
+    backgroundColor: COLORS.white,
+    borderRadius: BORDER_RADIUS.lg,
+    boxShadow: SHADOWS.base,
+    padding: SPACING.xxl,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 700,
-    color: "#1a1a2e",
-    margin: "0 0 8px 0",
+    fontSize: FONT_SIZES.xxxl,
+    fontWeight: FONT_WEIGHTS.bold,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.sm,
   },
-  email: { fontSize: 14, color: "#64748b", margin: "0 0 24px 0" },
-  form: { display: "flex", flexDirection: "column", gap: 16 },
+  email: {
+    fontSize: FONT_SIZES.base,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.xl,
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: SPACING.lg,
+  },
+  formGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: SPACING.xs,
+  },
+  label: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: FONT_WEIGHTS.medium,
+    color: COLORS.textPrimary,
+  },
   input: {
-    padding: 14,
-    fontSize: 16,
-    border: "1px solid #e2e8f0",
-    borderRadius: 10,
+    padding: SPACING.md,
+    fontSize: FONT_SIZES.base,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: BORDER_RADIUS.md,
   },
   button: {
-    padding: 14,
-    fontSize: 16,
-    fontWeight: 600,
-    cursor: "pointer",
-    background: "#0f766e",
-    color: "white",
+    padding: SPACING.md,
+    fontSize: FONT_SIZES.base,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.white,
+    backgroundColor: COLORS.primary,
     border: "none",
-    borderRadius: 10,
+    borderRadius: BORDER_RADIUS.md,
+    cursor: "pointer",
+    marginTop: SPACING.md,
   },
-  error: { color: "#dc2626", margin: 0 },
-  success: { color: "#16a34a", margin: 0 },
+  error: {
+    color: COLORS.error,
+    fontSize: FONT_SIZES.sm,
+    marginBottom: SPACING.md,
+  },
+  success: {
+    backgroundColor: COLORS.bgSuccess,
+    color: COLORS.success,
+    padding: SPACING.md,
+    borderRadius: BORDER_RADIUS.md,
+    marginBottom: SPACING.md,
+    fontSize: FONT_SIZES.sm,
+  },
 };

@@ -1,3 +1,9 @@
+import {
+  requestInterceptor,
+  responseInterceptor,
+  errorInterceptor,
+} from './api-interceptors';
+
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 let storageUnavailable = false;
@@ -57,33 +63,48 @@ async function request(endpoint, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
+  // Apply request interceptor
+  const { url: interceptedUrl, options: interceptedOptions } = requestInterceptor(url, {
     ...options,
     headers,
   });
 
-  if (response.status === 401) {
-    safeRemoveItem("access_token");
-    safeRemoveItem("refresh_token");
-    // Don't redirect for login attempts—let the Login component show the error
-    if (!url.includes("/api/auth/token/")) {
-      window.location.href = "/login";
-      return;
-    }
-  }
+  try {
+    const response = await fetch(interceptedUrl, interceptedOptions);
 
-  if (!response.ok) {
-    const errorData = (await parseResponseBody(response)) || {};
-    if (errorData && typeof errorData === "object") {
-      throw { status: response.status, ...errorData };
-    }
-    throw {
-      status: response.status,
-      detail: String(errorData || "Request failed"),
-    };
-  }
+    // Apply response interceptor
+    const interceptedResponse = await responseInterceptor(response, interceptedUrl, interceptedOptions);
 
-  return parseResponseBody(response);
+    // Use intercepted response if token was refreshed and retried
+    const finalResponse = interceptedResponse || response;
+
+    if (finalResponse.status === 401) {
+      safeRemoveItem("access_token");
+      safeRemoveItem("refresh_token");
+      // Don't redirect for login attempts—let the Login component show the error
+      if (!interceptedUrl.includes("/api/auth/token/")) {
+        window.location.href = "/login";
+        return;
+      }
+    }
+
+    if (!finalResponse.ok) {
+      const errorData = (await parseResponseBody(finalResponse)) || {};
+      if (errorData && typeof errorData === "object") {
+        throw { status: finalResponse.status, ...errorData };
+      }
+      throw {
+        status: finalResponse.status,
+        detail: String(errorData || "Request failed"),
+      };
+    }
+
+    return parseResponseBody(finalResponse);
+  } catch (error) {
+    // Apply error interceptor
+    errorInterceptor(error, interceptedUrl);
+    throw error;
+  }
 }
 
 export const api = {

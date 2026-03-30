@@ -292,9 +292,6 @@ npm run test:coverage
 # Run ESLint to check code quality
 npm run lint
 
-# Auto-fix ESLint issues
-npm run lint:fix
-
 # Pre-push checks (lint + test + build)
 npm run prepush
 ```

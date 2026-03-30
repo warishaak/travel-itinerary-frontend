@@ -66,7 +66,7 @@ export default function Profile() {
           {success && <p style={styles.success}>{success}</p>}
 
           <form onSubmit={handleSubmit} style={styles.form}>
-            <ProfileImageUpload value={profileImage} onChange={setProfileImage} />
+            <ProfileImageUpload imageUrl={profileImage} onChange={setProfileImage} />
 
             <div style={styles.formGroup}>
               <label style={styles.label}>First Name</label>

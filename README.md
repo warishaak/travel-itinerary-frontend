@@ -363,25 +363,10 @@ npm install
 - **Context API** - State management for authentication
 - **CSS-in-JS** - Inline styles with theme constants
 
-### Backend
-- **Django 5.2** - Python web framework
-- **Django REST Framework 3.16** - RESTful API toolkit
-- **djangorestframework-simplejwt** - JWT authentication
-- **PostgreSQL 14+** - Relational database
-- **Gunicorn** - WSGI HTTP server
-- **WhiteNoise** - Static file serving
-
 ### External Services
 - **Cloudinary** - Cloud-based image storage and management
 - **SendGrid** - Transactional email service (password reset)
 - **Render** - Cloud hosting platform (frontend + backend)
-
-### Development Tools
-- **Vitest** - Fast unit testing framework
-- **ESLint** - Code linting and style checking
-- **Prettier** - Code formatting
-- **Git** - Version control
-- **npm** - Package management
 
 ### Architecture Patterns
 - **Three-Layer Architecture** - Frontend → API → Database

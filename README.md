@@ -510,3 +510,7 @@ This frontend is built following **enterprise architecture principles** to ensur
 
 
 ---
+
+## 🤖 AI Usage Acknowledgement
+
+This project has been developed with the assistance of GitHub Copilot. Copilot has been utilized throughout the development process to enhance productivity, provide code suggestions, and help with documentation. All code has been reviewed and refined to ensure quality, correctness, and adherence to best practices.

@@ -4,6 +4,7 @@ import { uploadToCloudinary } from "../utils/cloudinary";
 export default function ImageUpload({ images = [], onChange }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   async function handleFileChange(e) {
     const file = e.target.files?.[0];
@@ -22,11 +23,14 @@ export default function ImageUpload({ images = [], onChange }) {
     }
 
     setError("");
+    setSuccessMessage("");
     setUploading(true);
 
     try {
       const url = await uploadToCloudinary(file);
       onChange([...images, url]);
+      setSuccessMessage("Image uploaded successfully! ✓");
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
       setError(err.message || "Failed to upload image");
     } finally {
@@ -68,23 +72,29 @@ export default function ImageUpload({ images = [], onChange }) {
       </div>
 
       {error && <p style={styles.error}>{error}</p>}
+      {successMessage && <p style={styles.success}>{successMessage}</p>}
 
       {/* Image Grid */}
       {images.length > 0 && (
-        <div style={styles.imageGrid}>
-          {images.map((url, index) => (
-            <div key={index} style={styles.imageCard}>
-              <img src={url} alt={`Trip ${index + 1}`} style={styles.image} />
-              <button
-                type="button"
-                onClick={() => handleRemove(index)}
-                style={styles.removeBtn}
-                aria-label="Remove image"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+        <div style={styles.imageSection}>
+          <p style={styles.imageCount}>
+            {images.length} {images.length === 1 ? "image" : "images"} uploaded
+          </p>
+          <div style={styles.imageGrid}>
+            {images.map((url, index) => (
+              <div key={index} style={styles.imageCard}>
+                <img src={url} alt={`Trip ${index + 1}`} style={styles.image} />
+                <button
+                  type="button"
+                  onClick={() => handleRemove(index)}
+                  style={styles.removeBtn}
+                  aria-label="Remove image"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -136,6 +146,26 @@ const styles = {
   error: {
     color: "#dc2626",
     fontSize: 14,
+    margin: 0,
+  },
+  success: {
+    color: "#16a34a",
+    fontSize: 14,
+    margin: 0,
+    fontWeight: 600,
+  },
+  imageSection: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: "#f8fafc",
+    borderRadius: 8,
+    border: "1px solid #e2e8f0",
+  },
+  imageCount: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#64748b",
+    marginBottom: 12,
     margin: 0,
   },
   imageGrid: {

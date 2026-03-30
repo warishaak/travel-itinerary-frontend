@@ -30,6 +30,7 @@ export default function ItineraryDetail() {
   const [deleting, setDeleting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [newItem, setNewItem] = useState({ title: "", description: "", day_number: "" });
   const [editingIndex, setEditingIndex] = useState(null);
   const [editForm, setEditForm] = useState({ title: "", description: "", day_number: "" });
@@ -37,9 +38,12 @@ export default function ItineraryDetail() {
   async function saveActivities(activities) {
     setSaving(true);
     setError(null);
+    setSuccessMessage("");
     try {
       const updated = await api.itineraries.update(id, { ...itinerary, activities });
       setData(updated);
+      setSuccessMessage("Activities saved successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
       setError(parseApiError(err, "Failed to save activities"));
     } finally {
@@ -140,6 +144,7 @@ export default function ItineraryDetail() {
 
       <div style={styles.content}>
         {error && <div style={styles.errorBanner}>{error}</div>}
+        {successMessage && <div style={styles.successBanner}>{successMessage}</div>}
 
         <div style={styles.header}>
           <div>
@@ -277,6 +282,9 @@ export default function ItineraryDetail() {
 
         {/* Action Buttons */}
         <div style={styles.actions}>
+          <Link to="/itineraries" style={styles.backButton}>
+            ← Back to My Itineraries
+          </Link>
           <Link to={`/itineraries/${id}/edit`} style={styles.editButton}>
             Edit Itinerary
           </Link>
@@ -306,6 +314,14 @@ const styles = {
     padding: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
     marginBottom: SPACING.lg,
+  },
+  successBanner: {
+    backgroundColor: "#d4edda",
+    color: "#155724",
+    padding: SPACING.md,
+    borderRadius: BORDER_RADIUS.md,
+    marginBottom: SPACING.lg,
+    border: "1px solid #c3e6cb",
   },
   header: {
     backgroundColor: COLORS.white,
@@ -523,6 +539,19 @@ const styles = {
     display: "flex",
     gap: SPACING.md,
     justifyContent: "center",
+    flexWrap: "wrap",
+  },
+  backButton: {
+    padding: `${SPACING.md} ${SPACING.xl}`,
+    fontSize: FONT_SIZES.base,
+    fontWeight: FONT_WEIGHTS.semibold,
+    color: COLORS.white,
+    backgroundColor: COLORS.primary,
+    border: "none",
+    borderRadius: BORDER_RADIUS.md,
+    textDecoration: "none",
+    cursor: "pointer",
+    display: "inline-block",
   },
   editButton: {
     padding: `${SPACING.md} ${SPACING.xl}`,
